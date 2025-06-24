@@ -2,6 +2,7 @@
 
 #include "../../core/types.hpp"
 #include "../primitives/line.hpp"
+#include "../bounding.hpp"
 #include <cmath>
 #include <cstddef>
 #include <vector>
@@ -139,6 +140,10 @@ namespace concord {
         inline auto end() const noexcept { return points.end(); }
 
         inline const std::vector<Point> &getPoints() const noexcept { return points; }
+        
+        inline AABB getAABB() const {
+            return AABB::fromPoints(points);
+        }
 
       private:
         std::vector<Point> points;
