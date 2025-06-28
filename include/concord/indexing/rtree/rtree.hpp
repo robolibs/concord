@@ -181,6 +181,7 @@ namespace concord {
                     return nullptr; // Root split handled internally
                 }
 
+                // For non-root nodes, return the new node to be added to parent
                 return new_node;
             }
 
@@ -263,8 +264,11 @@ namespace concord {
                     }
                 }
                 
-                // Move seeds to respective nodes
-                new_node->entries.push_back(entries[seed2]);
+                // Store seeds before modifying the vector
+                Entry seed1_entry = entries[seed1];
+                Entry seed2_entry = entries[seed2];
+                
+                // Remove seeds from entries (remove higher index first to avoid index shift)
                 if (seed1 > seed2) {
                     entries.erase(entries.begin() + seed1);
                     entries.erase(entries.begin() + seed2);
@@ -275,11 +279,13 @@ namespace concord {
                 
                 // Distribute remaining entries
                 std::vector<Entry> remaining = entries;
+                
+                // Clear original entries and start fresh with seed1
                 entries.clear();
-                if (!remaining.empty()) {
-                    entries.push_back(remaining.back());
-                    remaining.pop_back();
-                }
+                entries.push_back(seed1_entry);
+                
+                // New node starts with seed2
+                new_node->entries.push_back(seed2_entry);
                 
                 for (const auto &entry : remaining) {
                     // Calculate cost of adding to each group
@@ -316,8 +322,11 @@ namespace concord {
                     }
                 }
                 
-                // Move seeds to respective nodes
-                new_node->children.push_back(children[seed2]);
+                // Store seeds before modifying the vector
+                auto seed1_child = children[seed1];
+                auto seed2_child = children[seed2];
+                
+                // Remove seeds from children (remove higher index first to avoid index shift)
                 if (seed1 > seed2) {
                     children.erase(children.begin() + seed1);
                     children.erase(children.begin() + seed2);
@@ -328,11 +337,13 @@ namespace concord {
                 
                 // Distribute remaining children
                 std::vector<std::shared_ptr<Node>> remaining = children;
+                
+                // Clear original children and start fresh with seed1
                 children.clear();
-                if (!remaining.empty()) {
-                    children.push_back(remaining.back());
-                    remaining.pop_back();
-                }
+                children.push_back(seed1_child);
+                
+                // New node starts with seed2
+                new_node->children.push_back(seed2_child);
                 
                 for (const auto &child : remaining) {
                     // Calculate cost of adding to each group
