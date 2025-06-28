@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.4] - 2025-06-28
+
+### <!-- 0 -->⛰️  Features
+
+- Improve geospatial data processing efficiency and reliability
+
+### <!-- 1 -->🐛 Bug Fixes
+
+- Improve R-tree node splitting robustness
+
 ## [2.0.3] - 2025-06-17
 
 ### <!-- 2 -->🚜 Refactor
