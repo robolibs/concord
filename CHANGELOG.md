@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.0] - 2025-07-02
+
+### <!-- 0 -->⛰️  Features
+
+- Feature: Implement unified spatial indexing API
+
 ## [2.0.4] - 2025-06-28
 
 ### <!-- 0 -->⛰️  Features

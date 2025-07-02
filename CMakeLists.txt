@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 set(project_name concord)
-project(${project_name} VERSION 2.0.4 LANGUAGES CXX)
+project(${project_name} VERSION 2.1.0 LANGUAGES CXX)
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 cmake_policy(SET CMP0074 NEW)
