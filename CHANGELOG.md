@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0] - 2025-07-02
+
+### <!-- 4 -->⚡ Performance
+
+- Refactor grid calculations and optimize access methods
+- Optimize grid coordinate and point calculations
+
 ## [2.1.0] - 2025-07-02
 
 ### <!-- 0 -->⛰️  Features
