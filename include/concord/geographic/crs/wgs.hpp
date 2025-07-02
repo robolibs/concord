@@ -64,6 +64,14 @@ namespace concord {
             double bearing = std::atan2(y, x) * 180.0 / M_PI;
             return std::fmod(bearing + 360.0, 360.0);
         }
+
+        inline bool operator==(const WGS& other) const {
+            return lat == other.lat && lon == other.lon && alt == other.alt;
+        }
+
+        inline bool operator!=(const WGS& other) const {
+            return !(*this == other);
+        }
     };
 
 } // namespace concord

@@ -22,6 +22,14 @@ namespace concord {
         inline Size operator/(double scale) const { return Size{x / scale, y / scale, z / scale}; }
         inline Size operator*(const Size& other) const { return Size{x * other.x, y * other.y, z * other.z}; }
         
+        inline bool operator==(const Size& other) const {
+            return x == other.x && y == other.y && z == other.z;
+        }
+
+        inline bool operator!=(const Size& other) const {
+            return !(*this == other);
+        }
+        
         // Volume and area calculations
         inline double volume() const { return x * y * z; }
         inline double area_xy() const { return x * y; }

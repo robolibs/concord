@@ -142,7 +142,7 @@ void test_spatial_indexing() {
     std::cout << "\n=== Testing Spatial Indexing ===" << std::endl;
 
     // Test spatial hash grid
-    SpatialHashGrid<int> grid(10.0); // 10 unit cell size
+    concord::indexing::SpatialHashGrid<int> grid(10.0); // 10 unit cell size
     Point p1(15, 25, 0);
     Point p2(18, 22, 0);
 

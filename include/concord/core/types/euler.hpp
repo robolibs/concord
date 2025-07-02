@@ -29,6 +29,14 @@ namespace concord {
         }
         inline Euler operator*(double scale) const { return Euler{roll * scale, pitch * scale, yaw * scale}; }
 
+        inline bool operator==(const Euler& other) const {
+            return roll == other.roll && pitch == other.pitch && yaw == other.yaw;
+        }
+
+        inline bool operator!=(const Euler& other) const {
+            return !(*this == other);
+        }
+
         // Angle normalization
         inline Euler normalized() const {
             auto normalize_angle = [](double angle) {

@@ -153,7 +153,7 @@ TEST_CASE("Coordinate system validation and properties") {
 TEST_CASE("Spatial indexing and queries") {
     
     SUBCASE("Spatial hash grid operations") {
-        SpatialHashGrid<int> grid(10.0);  // 10-unit cells
+        concord::indexing::SpatialHashGrid<int> grid(10.0);  // 10-unit cells
         
         // Insert test data
         Point p1(15.0, 25.0, 0.0);

@@ -55,6 +55,14 @@ namespace concord {
             return *this;
         }
 
+        inline bool operator==(const Point &other) const {
+            return x == other.x && y == other.y && z == other.z;
+        }
+
+        inline bool operator!=(const Point &other) const {
+            return !(*this == other);
+        }
+
         // Distance and magnitude operations
         inline double magnitude() const { return std::sqrt(x * x + y * y + z * z); }
         inline double distance_to(const Point &other) const {

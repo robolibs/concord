@@ -139,6 +139,15 @@ namespace concord {
             }
             return out;
         }
+
+        inline bool operator==(const Grid& other) const {
+            return rows_ == other.rows_ && cols_ == other.cols_ && 
+                   inradius_ == other.inradius_ && data_ == other.data_;
+        }
+
+        inline bool operator!=(const Grid& other) const {
+            return !(*this == other);
+        }
     };
 
 } // namespace concord

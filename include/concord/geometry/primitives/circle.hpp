@@ -35,6 +35,14 @@ namespace concord {
         inline double getRadius() const noexcept { return radius; }
         inline void setRadius(double r) noexcept { radius = r; }
 
+        inline bool operator==(const Circle& other) const {
+            return center == other.center && radius == other.radius;
+        }
+
+        inline bool operator!=(const Circle& other) const {
+            return !(*this == other);
+        }
+
       private:
         Point center;
         double radius;

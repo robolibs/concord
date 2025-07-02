@@ -166,6 +166,16 @@ namespace concord {
             return Rectangle(tl, tr, bl, br);
         }
 
+        inline bool operator==(const Rectangle& other) const {
+            return top_left == other.top_left && top_right == other.top_right && 
+                   bottom_left == other.bottom_left && bottom_right == other.bottom_right &&
+                   orientation == other.orientation;
+        }
+
+        inline bool operator!=(const Rectangle& other) const {
+            return !(*this == other);
+        }
+
       private:
         Point top_left;
         Point top_right;

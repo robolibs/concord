@@ -74,6 +74,14 @@ namespace concord {
         }
 
         inline std::vector<Point> get_corners() const { return pose.get_corners(size); }
+
+        inline bool operator==(const Bound& other) const {
+            return pose == other.pose && size == other.size;
+        }
+
+        inline bool operator!=(const Bound& other) const {
+            return !(*this == other);
+        }
     };
 
 } // namespace concord

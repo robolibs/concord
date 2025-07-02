@@ -1,5 +1,7 @@
 #include <concord/algorithms/spatial_algorithms.hpp>
 #include <concord/indexing/hash_grid/spatial_hash_grid.hpp>
+#include <concord/indexing/rtree/rtree.hpp>
+#include <concord/indexing/quadtree/quadtree.hpp>
 #include <doctest/doctest.h>
 
 using namespace concord;
@@ -117,7 +119,7 @@ TEST_CASE("Spatial algorithms") {
 
 TEST_CASE("Spatial indexing") {
     SUBCASE("R-Tree insertion and query") {
-        RTree<Point> rtree;
+        concord::indexing::RTree<Point> rtree;
 
         // Insert some points with their AABB
         Point p1, p2, p3;
@@ -166,7 +168,7 @@ TEST_CASE("Spatial indexing") {
         boundary_max.z = 1.0;
         AABB boundary(boundary_min, boundary_max);
 
-        QuadTree<Point> qtree(boundary);
+        concord::indexing::QuadTree<Point> qtree(boundary);
 
         // Insert points
         Point p1, p2, p3;

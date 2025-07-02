@@ -41,7 +41,7 @@ TEST_CASE("GIS Pipeline Integration") {
         CHECK(local_points[0].z == doctest::Approx(0.0).epsilon(0.1));
         
         // 4. Spatial indexing for efficient queries
-        RTree<size_t> spatial_index;
+        concord::indexing::RTree<size_t> spatial_index;
         for (size_t i = 0; i < local_points.size(); ++i) {
             Point p(local_points[i].x, local_points[i].y, local_points[i].z);
             AABB bounds(p, p); // Point bounds
@@ -130,7 +130,7 @@ TEST_CASE("Multi-scale Spatial Analysis") {
         city_blocks.emplace_back(block2_points);
         
         // 2. Create spatial index for blocks
-        RTree<size_t> block_index;
+        concord::indexing::RTree<size_t> block_index;
         for (size_t i = 0; i < city_blocks.size(); ++i) {
             AABB bounds = city_blocks[i].getAABB();
             block_index.insert(bounds, i);
@@ -151,9 +151,9 @@ TEST_CASE("Multi-scale Spatial Analysis") {
             auto candidates = block_index.search(building_bounds);
             
             int block_id = -1; // -1 means no block
-            for (const auto& candidate_id : candidates) {
-                if (city_blocks[candidate_id].contains(building)) {
-                    block_id = static_cast<int>(candidate_id);
+            for (const auto& candidate : candidates) {
+                if (city_blocks[candidate.data].contains(building)) {
+                    block_id = static_cast<int>(candidate.data);
                     break;
                 }
             }
@@ -223,7 +223,7 @@ TEST_CASE("Navigation and Pathfinding Integration") {
         obstacles.emplace_back(park);
         
         // 3. Create spatial index for obstacles
-        RTree<size_t> obstacle_index;
+        concord::indexing::RTree<size_t> obstacle_index;
         for (size_t i = 0; i < obstacles.size(); ++i) {
             AABB bounds = obstacles[i].getAABB();
             obstacle_index.insert(bounds, i);
@@ -239,8 +239,8 @@ TEST_CASE("Navigation and Pathfinding Integration") {
         AABB path_bounds(start, end);
         auto potential_obstacles = obstacle_index.search(path_bounds);
         
-        for (const auto& obstacle_id : potential_obstacles) {
-            const auto& obstacle = obstacles[obstacle_id];
+        for (const auto& obstacle_candidate : potential_obstacles) {
+            const auto& obstacle = obstacles[obstacle_candidate.data];
             // Simplified intersection test - in real implementation would use
             // proper line-polygon intersection
             Point path_mid;
@@ -303,7 +303,7 @@ TEST_CASE("Environmental Monitoring Integration") {
         CHECK(sensor_locations.size() == temperature_readings.size());
         
         // 3. Create spatial index for sensors
-        RTree<size_t> sensor_index;
+        concord::indexing::RTree<size_t> sensor_index;
         for (size_t i = 0; i < sensor_locations.size(); ++i) {
             AABB bounds(sensor_locations[i], sensor_locations[i]);
             sensor_index.insert(bounds, i);

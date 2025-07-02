@@ -145,6 +145,14 @@ namespace concord {
             return AABB::fromPoints(points);
         }
 
+        inline bool operator==(const Polygon& other) const {
+            return points == other.points;
+        }
+
+        inline bool operator!=(const Polygon& other) const {
+            return !(*this == other);
+        }
+
       private:
         std::vector<Point> points;
     };

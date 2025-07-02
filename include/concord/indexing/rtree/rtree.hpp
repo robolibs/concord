@@ -24,6 +24,21 @@ namespace concord {
                 T data;
 
                 Entry(const AABB &bounds, const T &data) : bounds(bounds), data(data) {}
+                
+                bool operator==(const Entry& other) const {
+                    return bounds == other.bounds && data == other.data;
+                }
+                
+                bool operator!=(const Entry& other) const {
+                    return !(*this == other);
+                }
+                
+                bool operator<(const Entry& other) const {
+                    if (bounds.min_point.x != other.bounds.min_point.x) return bounds.min_point.x < other.bounds.min_point.x;
+                    if (bounds.min_point.y != other.bounds.min_point.y) return bounds.min_point.y < other.bounds.min_point.y;
+                    if (bounds.min_point.z != other.bounds.min_point.z) return bounds.min_point.z < other.bounds.min_point.z;
+                    return false; // For data comparison, we could add this if T supports it
+                }
             };
 
             struct Node {
@@ -101,6 +116,38 @@ namespace concord {
             size_t size() const { return count_entries(root_); }
 
             /**
+             * @brief Remove an entry from the R-tree
+             * @param bounds Bounding box of the entry to remove
+             * @param data Data associated with the entry to remove
+             * @return True if entry was found and removed, false otherwise
+             */
+            bool remove(const AABB &bounds, const T &data) {
+                Entry entry(bounds, data);
+                return remove_entry(root_, entry);
+            }
+
+            /**
+             * @brief Find k nearest neighbors to a point
+             * @param point The query point
+             * @param k Number of neighbors to find
+             * @return Vector of k nearest entries (may be less than k if tree has fewer entries)
+             */
+            std::vector<Entry> k_nearest_neighbors(const Point &point, size_t k) const {
+                std::vector<std::pair<double, Entry>> candidates;
+                k_nearest_recursive(root_, point, candidates);
+                
+                // Sort by distance and take first k
+                std::sort(candidates.begin(), candidates.end());
+                
+                std::vector<Entry> results;
+                size_t count = std::min(k, candidates.size());
+                for (size_t i = 0; i < count; ++i) {
+                    results.push_back(candidates[i].second);
+                }
+                return results;
+            }
+
+            /**
              * @brief Clear all entries from the R-tree
              */
             void clear() { root_ = std::make_shared<Node>(); }
@@ -171,7 +218,7 @@ namespace concord {
                 update_bounds(new_node);
 
                 // If this was the root, create a new root
-                if (node == root_) {
+                if (node.get() == root_.get()) {
                     auto new_root = std::make_shared<Node>();
                     new_root->is_leaf = false;
                     new_root->children.push_back(node);
@@ -383,6 +430,58 @@ namespace concord {
                     bounds = bounds.union_with(children[i]->bounds);
                 }
                 return bounds;
+            }
+
+            bool remove_entry(std::shared_ptr<Node> node, const Entry &entry) {
+                if (node->is_leaf) {
+                    // Search for entry in leaf
+                    for (auto it = node->entries.begin(); it != node->entries.end(); ++it) {
+                        if (it->bounds == entry.bounds && it->data == entry.data) {
+                            node->entries.erase(it);
+                            update_bounds(node);
+                            return true;
+                        }
+                    }
+                    return false;
+                } else {
+                    // Search in children
+                    for (auto &child : node->children) {
+                        if (child->bounds.intersects(entry.bounds)) {
+                            if (remove_entry(child, entry)) {
+                                update_bounds(node);
+                                // TODO: Handle underflow and tree restructuring
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            void k_nearest_recursive(std::shared_ptr<Node> node, const Point &point, 
+                                   std::vector<std::pair<double, Entry>> &candidates) const {
+                if (!node) return;
+
+                if (node->is_leaf) {
+                    // Add all entries with their distances
+                    for (const auto &entry : node->entries) {
+                        double distance = entry.bounds.distance_to_point(point);
+                        candidates.emplace_back(distance, entry);
+                    }
+                } else {
+                    // Process children ordered by their minimum distance to point
+                    std::vector<std::pair<double, std::shared_ptr<Node>>> child_distances;
+                    for (const auto &child : node->children) {
+                        double min_distance = child->bounds.distance_to_point(point);
+                        child_distances.emplace_back(min_distance, child);
+                    }
+                    
+                    std::sort(child_distances.begin(), child_distances.end());
+                    
+                    for (const auto &[distance, child] : child_distances) {
+                        k_nearest_recursive(child, point, candidates);
+                    }
+                }
             }
         };
 

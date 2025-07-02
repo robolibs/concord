@@ -67,6 +67,17 @@ namespace concord {
             }
             return *this;
         }
+        
+        inline bool operator==(const Vector& other) const {
+            for (size_t i = 0; i < N; ++i) {
+                if (data[i] != other[i]) return false;
+            }
+            return true;
+        }
+        
+        inline bool operator!=(const Vector& other) const {
+            return !(*this == other);
+        }
     };
     
     using Vec2f = Vector<float, 2>;
@@ -129,6 +140,19 @@ namespace concord {
         inline static Matrix<T, Rows, Cols> identity() {
             static_assert(Rows == Cols, "Identity matrix must be square");
             return Matrix<T, Rows, Cols>{};
+        }
+        
+        inline bool operator==(const Matrix& other) const {
+            for (size_t i = 0; i < Rows; ++i) {
+                for (size_t j = 0; j < Cols; ++j) {
+                    if (data[i][j] != other[i][j]) return false;
+                }
+            }
+            return true;
+        }
+        
+        inline bool operator!=(const Matrix& other) const {
+            return !(*this == other);
         }
     };
     

@@ -14,5 +14,13 @@ namespace concord {
         ENU(const Point &p, const Datum &datum = Datum()) : Point(p), datum(datum) {}
 
         WGS toWGS() const;
+
+        inline bool operator==(const ENU& other) const {
+            return Point::operator==(other) && datum == other.datum;
+        }
+
+        inline bool operator!=(const ENU& other) const {
+            return !(*this == other);
+        }
     };
 } // namespace concord
