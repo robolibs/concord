@@ -25,6 +25,7 @@ namespace concord {
         size_type cols_{0};
         double inradius_{0.0};
         bool centered_{false};
+        bool reverse_y_{false};
         concord::Pose shift_{};
         std::vector<T> data_;
 
@@ -46,8 +47,8 @@ namespace concord {
       public:
         Grid() = default;
 
-        Grid(size_type rows, size_type cols, double radius, bool centered, concord::Pose shift)
-            : rows_{rows}, cols_{cols}, inradius_{radius}, centered_{centered}, shift_{shift}, data_(rows * cols) {
+        Grid(size_type rows, size_type cols, double radius, bool centered, concord::Pose shift, bool reverse_y = false)
+            : rows_{rows}, cols_{cols}, inradius_{radius}, centered_{centered}, shift_{shift}, reverse_y_{reverse_y}, data_(rows * cols) {
             // Validate constructor parameters
             if (rows == 0 || cols == 0) {
                 throw std::invalid_argument("Grid dimensions must be positive");
@@ -82,17 +83,23 @@ namespace concord {
                 x_coords_[c] = (static_cast<double>(c) + 0.5) * inradius_;
             }
             for (size_type r = 0; r < rows_; ++r) {
-                y_coords_[r] = (static_cast<double>(r) + 0.5) * inradius_;
+                if (reverse_y) {
+                    // Reverse Y coordinate: row 0 = top (highest Y), row N-1 = bottom (lowest Y)
+                    y_coords_[r] = (static_cast<double>(rows_ - 1 - r) + 0.5) * inradius_;
+                } else {
+                    // Standard Y coordinate: row 0 = bottom (lowest Y), row N-1 = top (highest Y)
+                    y_coords_[r] = (static_cast<double>(r) + 0.5) * inradius_;
+                }
             }
 
             // Initialize data with default T values
             std::fill(data_.begin(), data_.end(), T{});
         }
 
-        Grid(const Polygon &poly, double resolution, bool centered = true)
+        Grid(const Polygon &poly, double resolution, bool centered = true, bool reverse_y = false)
             : Grid(static_cast<size_type>(std::ceil(poly.get_obb().size.x / resolution)),
                    static_cast<size_type>(std::ceil(poly.get_obb().size.y / resolution)), resolution, centered,
-                   poly.get_obb().pose) {}
+                   poly.get_obb().pose, reverse_y) {}
 
         // Compute point on-demand (optimized with fast paths)
         [[gnu::hot]] inline Point get_point(size_type r, size_type c) const {
@@ -329,6 +336,70 @@ namespace concord {
         }
 
       public:
+        // Convert world coordinates to grid indices  
+        inline std::pair<size_type, size_type> world_to_grid(const Point& world_point) const {
+            if (is_identity_) {
+                // Fast path for axis-aligned grids
+                double col_d = (world_point.x - offset_x_) / inradius_ - 0.5;
+                double row_d = (world_point.y - offset_y_) / inradius_ - 0.5;
+                
+                // Apply reverse_y transformation if enabled
+                if (reverse_y_) {
+                    row_d = static_cast<double>(rows_ - 1) - row_d;
+                }
+                
+                // Clamp to valid range
+                size_type col = static_cast<size_type>(std::max(0.0, std::min(static_cast<double>(cols_ - 1), std::round(col_d))));
+                size_type row = static_cast<size_type>(std::max(0.0, std::min(static_cast<double>(rows_ - 1), std::round(row_d))));
+                
+                return {row, col};
+            } else {
+                // Transform world point to grid's local coordinate system
+                const double translated_x = world_point.x - shift_.point.x;
+                const double translated_y = world_point.y - shift_.point.y;
+
+                // Inverse rotation matrix components
+                const double inv_cos = cos_yaw_;  // cos(-theta) = cos(theta)
+                const double inv_sin = -sin_yaw_; // sin(-theta) = -sin(theta)
+
+                // Rotate to grid alignment
+                const double local_x = translated_x * inv_cos - translated_y * inv_sin;
+                const double local_y = translated_x * inv_sin + translated_y * inv_cos;
+
+                // Convert to grid coordinates
+                double col_d = (local_x + half_width_) / inradius_ - 0.5;
+                double row_d = (local_y + half_height_) / inradius_ - 0.5;
+                
+                // Apply reverse_y transformation if enabled
+                if (reverse_y_) {
+                    row_d = static_cast<double>(rows_ - 1) - row_d;
+                }
+                
+                // Clamp to valid range
+                size_type col = static_cast<size_type>(std::max(0.0, std::min(static_cast<double>(cols_ - 1), std::round(col_d))));
+                size_type row = static_cast<size_type>(std::max(0.0, std::min(static_cast<double>(rows_ - 1), std::round(row_d))));
+                
+                return {row, col};
+            }
+        }
+
+        // Convert grid indices to world coordinates (alias for get_point for clarity)
+        inline Point grid_to_world(size_type row, size_type col) const {
+            return get_point(row, col);
+        }
+
+        // Get value at world coordinate
+        inline const T& get_value_at_world(const Point& world_point) const {
+            auto [row, col] = world_to_grid(world_point);
+            return data_[index(row, col)];
+        }
+
+        // Set value at world coordinate
+        inline void set_value_at_world(const Point& world_point, const T& value) {
+            auto [row, col] = world_to_grid(world_point);
+            data_[index(row, col)] = value;
+        }
+
         inline bool operator==(const Grid &other) const {
             return rows_ == other.rows_ && cols_ == other.cols_ && inradius_ == other.inradius_ &&
                    centered_ == other.centered_ && shift_ == other.shift_ && data_ == other.data_;
