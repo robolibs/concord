@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.2] - 2025-07-08
+
+### <!-- 0 -->⛰️  Features
+
+- Add map coordinate reversal and conversion
+
 ## [2.2.1] - 2025-07-08
 
 ### <!-- 1 -->🐛 Bug Fixes
