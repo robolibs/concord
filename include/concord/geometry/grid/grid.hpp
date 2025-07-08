@@ -40,8 +40,8 @@ namespace concord {
         bool is_identity_{true}; // Fast path flag
 
         // Precomputed local coordinates
-        std::vector<double> x_coords_; // Local x coordinates (size = rows_)
-        std::vector<double> y_coords_; // Local y coordinates (size = cols_)
+        std::vector<double> x_coords_; // Local x coordinates (size = cols_)
+        std::vector<double> y_coords_; // Local y coordinates (size = rows_)
 
       public:
         Grid() = default;
@@ -76,13 +76,13 @@ namespace concord {
             offset_y_ = -half_height_ + shift_.point.y;
 
             // Precompute local coordinates
-            x_coords_.resize(rows_);
-            y_coords_.resize(cols_);
-            for (size_type r = 0; r < rows_; ++r) {
-                x_coords_[r] = (static_cast<double>(r) + 0.5) * inradius_;
-            }
+            x_coords_.resize(cols_);
+            y_coords_.resize(rows_);
             for (size_type c = 0; c < cols_; ++c) {
-                y_coords_[c] = (static_cast<double>(c) + 0.5) * inradius_;
+                x_coords_[c] = (static_cast<double>(c) + 0.5) * inradius_;
+            }
+            for (size_type r = 0; r < rows_; ++r) {
+                y_coords_[r] = (static_cast<double>(r) + 0.5) * inradius_;
             }
 
             // Initialize data with default T values
@@ -102,12 +102,12 @@ namespace concord {
 
             // Fast path for identity transform (no rotation, no translation)
             if (is_identity_) [[likely]] {
-                return Point{x_coords_[r] + offset_x_, y_coords_[c] + offset_y_, 0.0};
+                return Point{x_coords_[c] + offset_x_, y_coords_[r] + offset_y_, 0.0};
             }
 
             // General case with rotation/translation using precomputed coordinates
-            double local_x = x_coords_[r] - half_width_;
-            double local_y = y_coords_[c] - half_height_;
+            double local_x = x_coords_[c] - half_width_;
+            double local_y = y_coords_[r] - half_height_;
 
             // Apply rotation and translation
             return Point{cos_yaw_ * local_x - sin_yaw_ * local_y + shift_.point.x,
@@ -172,10 +172,10 @@ namespace concord {
 
                 size_type idx = 0;
                 for (size_type r = 0; r < rows_; ++r) {
-                    const float base_x = (static_cast<float>(r) + 0.5f) * inradius_f + offset_x_f;
+                    const float base_y = (static_cast<float>(r) + 0.5f) * inradius_f + offset_y_f;
                     for (size_type c = 0; c < cols_; ++c) {
-                        const float y = (static_cast<float>(c) + 0.5f) * inradius_f + offset_y_f;
-                        points[idx++] = {base_x, y, 0.0f};
+                        const float x = (static_cast<float>(c) + 0.5f) * inradius_f + offset_x_f;
+                        points[idx++] = {x, base_y, 0.0f};
                     }
                 }
             } else {
@@ -190,12 +190,12 @@ namespace concord {
 
                 size_type idx = 0;
                 for (size_type r = 0; r < rows_; ++r) {
-                    const float local_x_base = (static_cast<float>(r) + 0.5f) * inradius_f - half_width_f;
+                    const float local_y_base = (static_cast<float>(r) + 0.5f) * inradius_f - half_height_f;
                     for (size_type c = 0; c < cols_; ++c) {
-                        const float local_y = (static_cast<float>(c) + 0.5f) * inradius_f - half_height_f;
+                        const float local_x = (static_cast<float>(c) + 0.5f) * inradius_f - half_width_f;
 
-                        const float world_x = cos_yaw_f * local_x_base - sin_yaw_f * local_y + shift_x_f;
-                        const float world_y = sin_yaw_f * local_x_base + cos_yaw_f * local_y + shift_y_f;
+                        const float world_x = cos_yaw_f * local_x - sin_yaw_f * local_y_base + shift_x_f;
+                        const float world_y = sin_yaw_f * local_x + cos_yaw_f * local_y_base + shift_y_f;
 
                         points[idx++] = {world_x, world_y, 0.0f};
                     }
@@ -271,10 +271,10 @@ namespace concord {
         world_to_grid_bounds(const Point &min_world, const Point &max_world) const {
             if (is_identity_) {
                 // Fast path for axis-aligned grids
-                const double r_min_d = (min_world.x - offset_x_) / inradius_ - 0.5;
-                const double r_max_d = (max_world.x - offset_x_) / inradius_ - 0.5;
-                const double c_min_d = (min_world.y - offset_y_) / inradius_ - 0.5;
-                const double c_max_d = (max_world.y - offset_y_) / inradius_ - 0.5;
+                const double r_min_d = (min_world.y - offset_y_) / inradius_ - 0.5;
+                const double r_max_d = (max_world.y - offset_y_) / inradius_ - 0.5;
+                const double c_min_d = (min_world.x - offset_x_) / inradius_ - 0.5;
+                const double c_max_d = (max_world.x - offset_x_) / inradius_ - 0.5;
 
                 return {static_cast<size_type>(std::max(0.0, std::floor(r_min_d))),
                         static_cast<size_type>(std::min(static_cast<double>(rows_), std::ceil(r_max_d))),
@@ -310,11 +310,11 @@ namespace concord {
                     max_grid_y = std::max(max_grid_y, grid_y);
                 }
 
-                // Convert grid coordinates to indices - rows map to X, columns map to Y (matching identity case)
-                const double r_min_d = (min_grid_x - offset_x_) / inradius_ - 0.5;
-                const double r_max_d = (max_grid_x - offset_x_) / inradius_ - 0.5;
-                const double c_min_d = (min_grid_y - offset_y_) / inradius_ - 0.5;
-                const double c_max_d = (max_grid_y - offset_y_) / inradius_ - 0.5;
+                // Convert grid coordinates to indices - rows map to Y, columns map to X
+                const double r_min_d = (min_grid_y - offset_y_) / inradius_ - 0.5;
+                const double r_max_d = (max_grid_y - offset_y_) / inradius_ - 0.5;
+                const double c_min_d = (min_grid_x - offset_x_) / inradius_ - 0.5;
+                const double c_max_d = (max_grid_x - offset_x_) / inradius_ - 0.5;
 
                 const double actual_r_min = std::min(r_min_d, r_max_d);
                 const double actual_r_max = std::max(r_min_d, r_max_d);
