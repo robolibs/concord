@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.1] - 2025-07-08
+
+### <!-- 1 -->🐛 Bug Fixes
+
+- Fix grid coordinate dimension assignment
+
 ## [2.2.0] - 2025-07-02
 
 ### <!-- 4 -->⚡ Performance
