@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.3] - 2025-07-31
+
+### <!-- 2 -->🚜 Refactor
+
+- Improve geographic conversions and polygon area balancing
+
 ## [2.2.2] - 2025-07-08
 
 ### <!-- 0 -->⛰️  Features
