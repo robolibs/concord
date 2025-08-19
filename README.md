@@ -385,9 +385,25 @@ Path path(waypoints);
 double total_length = path.length();
 Point interpolated = path.interpolate(0.5);  // 50% along path
 
-// Regular grid
-Grid grid(origin, spacing_x, spacing_y, width, height);
-Point grid_point = grid.getPoint(i, j);
+// 2D Regular grid for spatial data
+Grid<float> grid(rows, cols, cell_radius, centered, pose, reverse_y);
+Point grid_point = grid.get_point(row, col);
+float value = grid(row, col);
+grid.set_value_at_world(world_point, new_value);
+
+// 3D Layered grid (voxel-like structure)
+Layer<double> layer(rows, cols, layers, cell_radius, layer_height, centered, pose);
+Point layer_point = layer.get_point(row, col, layer_idx);
+double value = layer(row, col, layer_idx);
+layer.set_value_at_world(world_point, new_value);
+
+// Extract 2D slice from 3D layer
+Grid<double> slice = layer.extract_grid(layer_idx);
+
+// Layer operations
+auto layer_data = layer.layer(layer_idx);  // Get all data for a layer
+auto row_data = layer.row(row, layer_idx); // Get row within a layer
+auto corners = layer.corners();             // Get 8 corner points
 ```
 
 ### Bounding Volumes

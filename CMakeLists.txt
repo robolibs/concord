@@ -71,7 +71,7 @@ if(${project_name_upper}_BUILD_EXAMPLES)
   FetchContent_MakeAvailable(rerun_sdk)
   list(APPEND ext_deps rerun_sdk)
 
-  file(GLOB exe examples/*.cpp)
+  file(GLOB exe CONFIGURE_DEPENDS examples/*.cpp)
   # ----------------------------------------------
   set(exec_names)
   foreach(src_file IN LISTS exe)
@@ -111,7 +111,7 @@ if(${project_name_upper}_ENABLE_TESTS)
   )
   FetchContent_MakeAvailable(DocTest)
 
-  file(GLOB test_src test/*.cpp)
+  file(GLOB test_src CONFIGURE_DEPENDS test/*.cpp)
 
   foreach(src_file IN LISTS test_src)
     get_filename_component(test_name "${src_file}" NAME_WE)
