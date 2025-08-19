@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.0] - 2025-08-19
+
+### <!-- 0 -->⛰️  Features
+
+- Introduce 3D Layer class and update examples
+
 ## [2.2.3] - 2025-07-31
 
 ### <!-- 2 -->🚜 Refactor
