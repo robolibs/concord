@@ -13,6 +13,7 @@
 // Basic geometric primitives and shapes
 #include "geometry/bounding.hpp"
 #include "geometry/grid/grid.hpp"
+#include "geometry/layer/layer.hpp"
 #include "geometry/path.hpp"
 #include "geometry/polygon/polygon.hpp"
 #include "geometry/primitives/primitives.hpp"
