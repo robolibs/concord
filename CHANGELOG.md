@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.1] - 2025-08-19
+
+### <!-- 0 -->⛰️  Features
+
+- Add grid and layer property accessors
+
 ## [2.3.0] - 2025-08-19
 
 ### <!-- 0 -->⛰️  Features
