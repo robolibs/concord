@@ -159,6 +159,10 @@ namespace concord {
         constexpr size_type rows() const noexcept { return rows_; }
         constexpr size_type cols() const noexcept { return cols_; }
         constexpr double inradius() const noexcept { return inradius_; }
+        constexpr bool centered() const noexcept { return centered_; }
+        constexpr bool reverse_y() const noexcept { return reverse_y_; }
+        const concord::Pose& pose() const noexcept { return shift_; }
+        const concord::Pose& shift() const noexcept { return shift_; } // Alias for backward compatibility
 
         // Data iterators
         inline auto begin() noexcept { return data_.begin(); }

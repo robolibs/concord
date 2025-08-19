@@ -260,6 +260,11 @@ namespace concord {
         constexpr size_type layers() const noexcept { return layers_; }
         constexpr double inradius() const noexcept { return inradius_; }
         constexpr double layer_height() const noexcept { return layer_height_; }
+        constexpr bool centered() const noexcept { return centered_; }
+        constexpr bool reverse_y() const noexcept { return reverse_y_; }
+        constexpr bool reverse_z() const noexcept { return reverse_z_; }
+        const concord::Pose& pose() const noexcept { return shift_; }
+        const concord::Pose& shift() const noexcept { return shift_; } // Alias for backward compatibility
 
         // Data iterators
         inline auto begin() noexcept { return data_.begin(); }
