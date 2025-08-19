@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.2] - 2025-08-19
+
+### <!-- 2 -->🚜 Refactor
+
+- Add geometry layer to core
+
 ## [2.3.1] - 2025-08-19
 
 ### <!-- 0 -->⛰️  Features
