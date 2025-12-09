@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../types/point.hpp"
+#include "../types/point.hpp"
 #include <vector>
 
 namespace concord {
@@ -9,7 +9,7 @@ namespace concord {
 
             struct Triangle {
                 Point a, b, c;
-                Triangle(const Point &a, const Point &b, const Point &c) : a(a), b(b), c(c) {}
+                Triangle(const Point &a_, const Point &b_, const Point &c_) : a(a_), b(b_), c(c_) {}
             };
 
             // Delaunay triangulation
@@ -25,3 +25,4 @@ namespace concord {
         } // namespace triangulation
     } // namespace algorithms
 } // namespace concord
+

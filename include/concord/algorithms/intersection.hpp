@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../geometry/primitives/line.hpp"
-#include "../../types/point.hpp"
+#include "../geometry/primitives/line.hpp"
+#include "../types/point.hpp"
 #include <optional>
 
 namespace concord {
@@ -22,3 +22,4 @@ namespace concord {
         } // namespace intersection
     } // namespace algorithms
 } // namespace concord
+

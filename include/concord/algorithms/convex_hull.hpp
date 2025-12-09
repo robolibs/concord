@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../types/point.hpp"
+#include "../types/point.hpp"
 #include <vector>
 
 namespace concord {
@@ -19,3 +19,4 @@ namespace concord {
         } // namespace convex_hull
     } // namespace algorithms
 } // namespace concord
+
