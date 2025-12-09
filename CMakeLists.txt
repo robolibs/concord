@@ -14,6 +14,7 @@ set(params
     -Wno-reorder
     -Wno-unused-parameter
     -Wno-unused-variable
+    -Wno-unused-but-set-variable
 )
 
 string(TOUPPER ${project_name} project_name_upper)
@@ -66,9 +67,7 @@ export(EXPORT ${project_name}Targets
 # --------------------------------------------------------------------------------------------------
 if(${project_name_upper}_BUILD_EXAMPLES)
   add_definitions(-DHAS_RERUN)
-  set(RERUN_DOWNLOAD_AND_BUILD_ARROW OFF)
-  FetchContent_Declare(rerun_sdk URL https://github.com/rerun-io/rerun/releases/latest/download/rerun_cpp_sdk.zip)
-  FetchContent_MakeAvailable(rerun_sdk)
+  find_package(rerun_sdk QUIET)
   list(APPEND ext_deps rerun_sdk)
 
   file(GLOB exe CONFIGURE_DEPENDS examples/*.cpp)
@@ -77,10 +76,7 @@ if(${project_name_upper}_BUILD_EXAMPLES)
   foreach(src_file IN LISTS exe)
     get_filename_component(exec_name "${src_file}" NAME_WE)
     add_executable(${exec_name} "${src_file}")
-      foreach(lib_file IN LISTS internal_deps)
-        target_compile_options(${exec_name} PRIVATE ${params})
-        target_sources(${exec_name} PRIVATE "${lib_file}")
-      endforeach()
+    target_compile_options(${exec_name} PRIVATE ${params})
     target_link_libraries(${exec_name} ${ext_deps})
     install(TARGETS ${exec_name} DESTINATION bin)
     list(APPEND exec_names ${exec_name})
@@ -116,10 +112,7 @@ if(${project_name_upper}_ENABLE_TESTS)
   foreach(src_file IN LISTS test_src)
     get_filename_component(test_name "${src_file}" NAME_WE)
     add_executable(${test_name} "${src_file}")
-      foreach(lib_file IN LISTS internal_deps)
-        target_compile_options(${test_name} PRIVATE ${params})
-        target_sources(${test_name} PRIVATE "${lib_file}")
-      endforeach()
+    target_compile_options(${test_name} PRIVATE ${params})
     target_link_libraries(${test_name} ${ext_deps} doctest_with_main)
     add_test(NAME ${test_name} COMMAND ${test_name})
   endforeach()

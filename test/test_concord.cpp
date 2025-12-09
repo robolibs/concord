@@ -3,30 +3,20 @@
 
 using namespace concord;
 
-TEST_CASE("Basic Vector operations") {
-    SUBCASE("Vector creation and access") {
-        Vector<double, 3> v{1.0, 2.0, 3.0};
+TEST_CASE("Basic Vec3d operations") {
+    SUBCASE("Vec3d creation and access") {
+        Vec3d v{1.0, 2.0, 3.0};
         CHECK(v[0] == 1.0);
         CHECK(v[1] == 2.0);
         CHECK(v[2] == 3.0);
     }
 
-    SUBCASE("Vector addition") {
-        Vector<double, 3> v1{1.0, 2.0, 3.0};
-        Vector<double, 3> v2{4.0, 5.0, 6.0};
-        auto result = v1 + v2;
-        CHECK(result[0] == 5.0);
-        CHECK(result[1] == 7.0);
-        CHECK(result[2] == 9.0);
-    }
-
-    SUBCASE("Vector subtraction") {
-        Vector<double, 3> v1{4.0, 5.0, 6.0};
-        Vector<double, 3> v2{1.0, 2.0, 3.0};
-        auto result = v1 - v2;
-        CHECK(result[0] == 3.0);
-        CHECK(result[1] == 3.0);
-        CHECK(result[2] == 3.0);
+    SUBCASE("Vec3d scalar multiplication") {
+        Vec3d v{1.0, 2.0, 3.0};
+        Vec3d result = v * 2.0;
+        CHECK(result[0] == 2.0);
+        CHECK(result[1] == 4.0);
+        CHECK(result[2] == 6.0);
     }
 }
 
@@ -65,5 +55,25 @@ TEST_CASE("Circle geometry tests") {
 
         CHECK(circle.contains(inside) == true);
         CHECK(circle.contains(outside) == false);
+    }
+}
+
+TEST_CASE("Point operations") {
+    SUBCASE("Point creation and distance") {
+        Point p1(1.0, 2.0, 3.0);
+        Point p2(4.0, 6.0, 3.0);
+
+        double dist = p1.distance_to(p2);
+        CHECK(dist == doctest::Approx(5.0)); // sqrt(9 + 16) = 5
+    }
+
+    SUBCASE("Point arithmetic") {
+        Point p1(1.0, 2.0, 3.0);
+        Point p2(4.0, 5.0, 6.0);
+
+        Point sum = p1 + p2;
+        CHECK(sum.x == 5.0);
+        CHECK(sum.y == 7.0);
+        CHECK(sum.z == 9.0);
     }
 }

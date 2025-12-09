@@ -1,5 +1,4 @@
 SHELL := /bin/bash
-TOP_HEAD := $(shell basename $(CURDIR))
 
 PROJECT_NAME := $(shell grep -Po 'set\s*\(\s*project_name\s+\K[^)]+' CMakeLists.txt)
 PROJECT_CAP  := $(shell echo $(PROJECT_NAME) | tr '[:lower:]' '[:upper:]')
@@ -15,21 +14,31 @@ $(info ------------------------------------------)
 $(info Project: $(PROJECT_NAME))
 $(info ------------------------------------------)
 
-.PHONY: build b compile c run r test t help h clean docs release
+.PHONY: build b config c reconfig run r test t help h clean docs release
 
 
 build:
-	@cd $(BUILD_DIR) && make -j$(shell nproc) 2>&1 | tee >(grep "^$(TOP_HEAD)" | grep -E "error:" > "$(TOP_HEAD)/.quickfix") || true
+	@if [ ! -d "$(BUILD_DIR)" ]; then \
+		echo "Build directory doesn't exist, running config first..."; \
+		$(MAKE) config; \
+	fi
+	@cd $(BUILD_DIR) && set -o pipefail && make -j$(shell nproc) 2>&1 | tee >(grep "^$(TOP_DIR)" | grep -E "error:" > "$(TOP_DIR)/.quickfix")
 
 b: build
 
-compile:
+config:
+	@mkdir -p $(BUILD_DIR)
+	@cd $(BUILD_DIR) && if [ -f Makefile ]; then make clean; fi
+	@echo "cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON .."
+	@cd $(BUILD_DIR) && cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON ..
+
+reconfig:
 	@rm -rf $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR)
 	@echo "cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON .."
 	@cd $(BUILD_DIR) && cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON ..
 
-c: compile
+c: config
 
 run:
 	@./build/main
@@ -47,7 +56,8 @@ help:
 	@echo
 	@echo "Available targets:"
 	@echo "  build        Build project"
-	@echo "  compile      Configure and generate build files"
+	@echo "  config       Configure and generate build files (preserves cache)"
+	@echo "  reconfig     Full reconfigure (cleans everything including cache)"
 	@echo "  run          Run the main executable"
 	@echo "  test         Run tests"
 	@echo "  docs         Build documentation (TYPE=mdbook|doxygen)"
