@@ -27,13 +27,27 @@ set(ext_deps)
 
 
 # --------------------------------------------------------------------------------------------------
-add_library(${project_name} INTERFACE)
+# Collect all source files from src directory
+file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+
+# Create library - STATIC if we have sources, INTERFACE if header-only
+if(LIB_SOURCES)
+    add_library(${project_name} STATIC ${LIB_SOURCES})
+    target_include_directories(${project_name} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+    target_compile_options(${project_name} PRIVATE ${params})
+else()
+    add_library(${project_name} INTERFACE)
+    target_include_directories(${project_name} INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+endif()
+
 # Allow users to link via `${project_name}::${project_name}`
 add_library(${project_name}::${project_name} ALIAS ${project_name})
-target_include_directories(${project_name} INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
 
 install(
   DIRECTORY include/
@@ -77,7 +91,7 @@ if(${project_name_upper}_BUILD_EXAMPLES)
     get_filename_component(exec_name "${src_file}" NAME_WE)
     add_executable(${exec_name} "${src_file}")
     target_compile_options(${exec_name} PRIVATE ${params})
-    target_link_libraries(${exec_name} ${ext_deps})
+    target_link_libraries(${exec_name} ${project_name}::${project_name} ${ext_deps})
     install(TARGETS ${exec_name} DESTINATION bin)
     list(APPEND exec_names ${exec_name})
   endforeach()
@@ -113,7 +127,7 @@ if(${project_name_upper}_ENABLE_TESTS)
     get_filename_component(test_name "${src_file}" NAME_WE)
     add_executable(${test_name} "${src_file}")
     target_compile_options(${test_name} PRIVATE ${params})
-    target_link_libraries(${test_name} ${ext_deps} doctest_with_main)
+    target_link_libraries(${test_name} ${project_name}::${project_name} doctest_with_main)
     add_test(NAME ${test_name} COMMAND ${test_name})
   endforeach()
 endif()

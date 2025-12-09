@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 
 namespace concord {
 
@@ -11,41 +11,32 @@ namespace concord {
         double z = 0.0;
 
         Size() = default;
-        Size(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
-        Size(double s) : x(s), y(s), z(s) {} // Uniform scaling
-        inline bool is_set() const { return x != 0.0 || y != 0.0 || z != 0.0; }
-        
-        // Mathematical operations
-        inline Size operator+(const Size& other) const { return Size{x + other.x, y + other.y, z + other.z}; }
-        inline Size operator-(const Size& other) const { return Size{x - other.x, y - other.y, z - other.z}; }
-        inline Size operator*(double scale) const { return Size{x * scale, y * scale, z * scale}; }
-        inline Size operator/(double scale) const { return Size{x / scale, y / scale, z / scale}; }
-        inline Size operator*(const Size& other) const { return Size{x * other.x, y * other.y, z * other.z}; }
-        
-        inline bool operator==(const Size& other) const {
-            return x == other.x && y == other.y && z == other.z;
-        }
+        Size(double x_, double y_, double z_);
+        Size(double s); // Uniform scaling
+        bool is_set() const;
 
-        inline bool operator!=(const Size& other) const {
-            return !(*this == other);
-        }
-        
+        // Mathematical operations
+        Size operator+(const Size &other) const;
+        Size operator-(const Size &other) const;
+        Size operator*(double scale) const;
+        Size operator/(double scale) const;
+        Size operator*(const Size &other) const;
+
+        bool operator==(const Size &other) const;
+        bool operator!=(const Size &other) const;
+
         // Volume and area calculations
-        inline double volume() const { return x * y * z; }
-        inline double area_xy() const { return x * y; }
-        inline double area_xz() const { return x * z; }
-        inline double area_yz() const { return y * z; }
-        inline double diagonal() const { return std::sqrt(x*x + y*y + z*z); }
-        inline double diagonal_2d() const { return std::sqrt(x*x + y*y); }
-        
+        double volume() const;
+        double area_xy() const;
+        double area_xz() const;
+        double area_yz() const;
+        double diagonal() const;
+        double diagonal_2d() const;
+
         // Utility functions
-        inline Size abs() const { return Size{std::abs(x), std::abs(y), std::abs(z)}; }
-        inline Size max(const Size& other) const { 
-            return Size{std::max(x, other.x), std::max(y, other.y), std::max(z, other.z)}; 
-        }
-        inline Size min(const Size& other) const { 
-            return Size{std::min(x, other.x), std::min(y, other.y), std::min(z, other.z)}; 
-        }
+        Size abs() const;
+        Size max(const Size &other) const;
+        Size min(const Size &other) const;
     };
 
 } // namespace concord

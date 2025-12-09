@@ -14,64 +14,37 @@ namespace concord {
         double y = 0.0;
         double z = 0.0;
 
-        Point(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
-        Point(double x_, double y_) : x(x_), y(y_), z(0.0) {}
-
+        Point(double x_, double y_, double z_);
+        Point(double x_, double y_);
         Point() = default;
 
         // Forward declaration for conversion method - implementation in crs.hpp
-        inline WGS toWGS(const Datum &datum) const;
+        WGS toWGS(const Datum &datum) const;
 
-        inline bool is_set() const { return x != 0.0 && y != 0.0; }
+        bool is_set() const;
 
         // Mathematical operations
-        inline Point operator+(const Point &other) const { return Point{x + other.x, y + other.y, z + other.z}; }
-        inline Point operator-(const Point &other) const { return Point{x - other.x, y - other.y, z - other.z}; }
-        inline Point operator*(double scale) const { return Point{x * scale, y * scale, z * scale}; }
-        inline Point operator/(double scale) const { return Point{x / scale, y / scale, z / scale}; }
+        Point operator+(const Point &other) const;
+        Point operator-(const Point &other) const;
+        Point operator*(double scale) const;
+        Point operator/(double scale) const;
 
-        inline Point &operator+=(const Point &other) {
-            x += other.x;
-            y += other.y;
-            z += other.z;
-            return *this;
-        }
-        inline Point &operator-=(const Point &other) {
-            x -= other.x;
-            y -= other.y;
-            z -= other.z;
-            return *this;
-        }
-        inline Point &operator*=(double scale) {
-            x *= scale;
-            y *= scale;
-            z *= scale;
-            return *this;
-        }
-        inline Point &operator/=(double scale) {
-            x /= scale;
-            y /= scale;
-            z /= scale;
-            return *this;
-        }
+        Point &operator+=(const Point &other);
+        Point &operator-=(const Point &other);
+        Point &operator*=(double scale);
+        Point &operator/=(double scale);
 
-        inline bool operator==(const Point &other) const { return x == other.x && y == other.y && z == other.z; }
-
-        inline bool operator!=(const Point &other) const { return !(*this == other); }
+        bool operator==(const Point &other) const;
+        bool operator!=(const Point &other) const;
 
         // Distance and magnitude operations
-        inline double magnitude() const { return std::sqrt(x * x + y * y + z * z); }
-        inline double distance_to(const Point &other) const {
-            return std::sqrt((x - other.x) * (x - other.x) + (y - other.y) * (y - other.y) +
-                             (z - other.z) * (z - other.z));
-        }
-        inline double distance_to_2d(const Point &other) const {
-            return std::sqrt((x - other.x) * (x - other.x) + (y - other.y) * (y - other.y));
-        }
+        double magnitude() const;
+        double distance_to(const Point &other) const;
+        double distance_to_2d(const Point &other) const;
 
         // Conversion to Vec3d
-        inline Vec3d to_vec3() const { return Vec3d{x, y, z}; }
-        inline static Point from_vec3(const Vec3d &v) { return Point{v[0], v[1], v[2]}; }
+        Vec3d to_vec3() const;
+        static Point from_vec3(const Vec3d &v);
     };
 
 } // namespace concord
