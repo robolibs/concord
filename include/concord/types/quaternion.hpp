@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../errors/error_handling.hpp"
-#include "../math/math.hpp"
+#include "../math.hpp"
 #include "euler.hpp"
 #include <cmath>
 
@@ -35,13 +34,11 @@ namespace concord {
             return Quaternion{w * scale, x * scale, y * scale, z * scale};
         }
 
-        inline bool operator==(const Quaternion& other) const {
+        inline bool operator==(const Quaternion &other) const {
             return w == other.w && x == other.x && y == other.y && z == other.z;
         }
 
-        inline bool operator!=(const Quaternion& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const Quaternion &other) const { return !(*this == other); }
 
         // Quaternion operations
         inline double norm() const {

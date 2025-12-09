@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../core/types.hpp"
-#include "../primitives/line.hpp"
+#include "../../types/bound.hpp"
 #include "../bounding.hpp"
+#include "../primitives/line.hpp"
 #include <cmath>
 #include <cstddef>
 #include <vector>
@@ -140,18 +140,12 @@ namespace concord {
         inline auto end() const noexcept { return points.end(); }
 
         inline const std::vector<Point> &getPoints() const noexcept { return points; }
-        
-        inline AABB getAABB() const {
-            return AABB::fromPoints(points);
-        }
 
-        inline bool operator==(const Polygon& other) const {
-            return points == other.points;
-        }
+        inline AABB getAABB() const { return AABB::fromPoints(points); }
 
-        inline bool operator!=(const Polygon& other) const {
-            return !(*this == other);
-        }
+        inline bool operator==(const Polygon &other) const { return points == other.points; }
+
+        inline bool operator!=(const Polygon &other) const { return !(*this == other); }
 
       private:
         std::vector<Point> points;

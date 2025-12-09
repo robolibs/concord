@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../math/math.hpp"
+#include "../math.hpp"
 #include "euler.hpp"
 #include "point.hpp"
 #include "quaternion.hpp"
@@ -54,13 +54,9 @@ namespace concord {
             return Pose{inv_enu, inv_angle};
         }
 
-        inline bool operator==(const Pose& other) const {
-            return point == other.point && angle == other.angle;
-        }
+        inline bool operator==(const Pose &other) const { return point == other.point && angle == other.angle; }
 
-        inline bool operator!=(const Pose& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const Pose &other) const { return !(*this == other); }
 
         inline std::vector<Point> get_corners(Size size) const {
             std::vector<Point> points;

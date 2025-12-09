@@ -1,7 +1,9 @@
 #pragma once
 
-#include "../core/math/math.hpp"
-#include "../core/types.hpp"
+#include "../geographic/crs/datum.hpp"
+#include "../types/euler.hpp"
+#include "../types/point.hpp"
+#include "../types/size.hpp"
 #include <algorithm>
 #include <array>
 #include <limits>
@@ -107,13 +109,11 @@ namespace concord {
                     Point{max_point.x, max_point.y, max_point.z}, Point{min_point.x, max_point.y, max_point.z}};
         }
 
-        inline bool operator==(const AABB& other) const {
+        inline bool operator==(const AABB &other) const {
             return min_point == other.min_point && max_point == other.max_point;
         }
 
-        inline bool operator!=(const AABB& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const AABB &other) const { return !(*this == other); }
     };
 
     // Oriented Bounding Box (OBB) - more precise than AABB
@@ -193,13 +193,11 @@ namespace concord {
             return corners;
         }
 
-        inline bool operator==(const OBB& other) const {
+        inline bool operator==(const OBB &other) const {
             return center == other.center && half_extents == other.half_extents && orientation == other.orientation;
         }
 
-        inline bool operator!=(const OBB& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const OBB &other) const { return !(*this == other); }
     };
 
     // Sphere/Circle bounding volume
@@ -264,13 +262,11 @@ namespace concord {
 
         inline double surface_area() const { return 4.0 * M_PI * radius * radius; }
 
-        inline bool operator==(const BoundingSphere& other) const {
+        inline bool operator==(const BoundingSphere &other) const {
             return center == other.center && radius == other.radius;
         }
 
-        inline bool operator!=(const BoundingSphere& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const BoundingSphere &other) const { return !(*this == other); }
     };
 
 } // namespace concord

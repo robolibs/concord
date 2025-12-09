@@ -1,14 +1,12 @@
 #pragma once
 
 // Core functionality
-#include "core/errors/error_handling.hpp"
-#include "core/math/math.hpp"
-#include "core/types.hpp"
-
-// Builder pattern for fluent coordinate transformations
-#include "builders/coordinate_builder.hpp"
-#include "builders/geometry_builder.hpp"
-#include "builders/spatial_builder.hpp"
+#include "types/bound.hpp"
+#include "types/euler.hpp"
+#include "types/point.hpp"
+#include "types/pose.hpp"
+#include "types/quaternion.hpp"
+#include "types/size.hpp"
 
 // Basic geometric primitives and shapes
 #include "geometry/bounding.hpp"

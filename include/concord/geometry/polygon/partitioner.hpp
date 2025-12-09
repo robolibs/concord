@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../algorithms/spatial_algorithms.hpp"
-#include "../../core/types.hpp"
+#include "../../types/point.hpp"
 #include "partition.hpp"
 #include "polygon.hpp"
 #include <algorithm>
@@ -62,27 +62,28 @@ namespace concord {
         std::vector<Polygon> partition_equal_areas(double target_area, double tolerance = 0.2) {
             polygons_.clear();
             std::vector<Polygon> result;
-            
+
             double total_area = border_.area();
             std::cout << "Total area to partition: " << total_area << " sq.m" << std::endl;
-            
+
             // Calculate optimal number of parts
             int num_parts = std::max(1, static_cast<int>(std::round(total_area / target_area)));
-            std::cout << "Target area per part: " << target_area << " sq.m, need " << num_parts << " parts" << std::endl;
-            
+            std::cout << "Target area per part: " << target_area << " sq.m, need " << num_parts << " parts"
+                      << std::endl;
+
             // For a single part, just return the original
             if (num_parts == 1) {
                 result.push_back(border_);
                 polygons_ = result;
                 return result;
             }
-            
+
             // Calculate grid dimensions for roughly square parts
             int grid_cols = static_cast<int>(std::ceil(std::sqrt(num_parts)));
             int grid_rows = static_cast<int>(std::ceil(static_cast<double>(num_parts) / grid_cols));
-            
+
             std::cout << "Using grid: " << grid_rows << " rows x " << grid_cols << " cols" << std::endl;
-            
+
             // For small number of parts, use simpler splitting
             std::vector<Polygon> grid_parts;
             std::cout << "DEBUG: num_parts = " << num_parts << ", condition = " << (num_parts <= 4) << std::endl;
@@ -96,10 +97,10 @@ namespace concord {
                 // Use split_by_grid with calculated dimensions
                 grid_parts = split_by_grid(border_, std::max(grid_rows, grid_cols));
             }
-            
+
             // Post-process to merge small parts and balance areas
             result = balance_part_areas(grid_parts, target_area, tolerance);
-            
+
             polygons_ = result;
             return result;
         }
@@ -632,69 +633,68 @@ namespace concord {
             if (num_parts <= 1) {
                 return {poly};
             }
-            
+
             std::vector<Polygon> result;
-            
+
             // For 2 parts, split along the longer dimension
             if (num_parts == 2) {
                 auto bbox = AABB::fromPoints(poly.getPoints());
                 double width = bbox.max_point.x - bbox.min_point.x;
                 double height = bbox.max_point.y - bbox.min_point.y;
-                
+
                 Line split_line;
                 if (width > height) {
                     // Split vertically at midpoint
                     double mid_x = (bbox.min_point.x + bbox.max_point.x) / 2.0;
-                    split_line = Line(Point(mid_x, bbox.min_point.y - 100, 0),
-                                     Point(mid_x, bbox.max_point.y + 100, 0));
+                    split_line = Line(Point(mid_x, bbox.min_point.y - 100, 0), Point(mid_x, bbox.max_point.y + 100, 0));
                 } else {
                     // Split horizontally at midpoint
                     double mid_y = (bbox.min_point.y + bbox.max_point.y) / 2.0;
-                    split_line = Line(Point(bbox.min_point.x - 100, mid_y, 0),
-                                     Point(bbox.max_point.x + 100, mid_y, 0));
+                    split_line = Line(Point(bbox.min_point.x - 100, mid_y, 0), Point(bbox.max_point.x + 100, mid_y, 0));
                 }
-                
+
                 return split_polygon_with_line(poly, split_line);
             }
-            
+
             // For more parts, recursively split
             if (num_parts > 2) {
                 // First split in half
                 auto halves = split_by_area_equal(poly, 2);
-                
+
                 // Then recursively split each half
-                for (const auto& half : halves) {
+                for (const auto &half : halves) {
                     auto sub_parts = split_by_area_equal(half, num_parts / 2);
                     result.insert(result.end(), sub_parts.begin(), sub_parts.end());
                 }
-                
+
                 return result;
             }
-            
+
             return {poly};
         }
-        
+
         // Balance areas of parts to be closer to target
-        std::vector<Polygon> balance_part_areas(const std::vector<Polygon> &parts, double target_area, double tolerance) const {
+        std::vector<Polygon> balance_part_areas(const std::vector<Polygon> &parts, double target_area,
+                                                double tolerance) const {
             std::vector<Polygon> balanced;
             std::vector<std::pair<Polygon, double>> part_areas;
-            
+
             // Calculate areas and store with polygons
             for (const auto &part : parts) {
                 double area = part.area();
-                if (area > target_area * 0.1) {  // Filter out tiny parts
+                if (area > target_area * 0.1) { // Filter out tiny parts
                     part_areas.push_back({part, area});
                 }
             }
-            
+
             // Sort by area descending
-            std::sort(part_areas.begin(), part_areas.end(), 
-                     [](const auto &a, const auto &b) { return a.second > b.second; });
-            
+            std::sort(part_areas.begin(), part_areas.end(),
+                      [](const auto &a, const auto &b) { return a.second > b.second; });
+
             // Process parts
             for (size_t i = 0; i < part_areas.size(); ++i) {
                 const auto &[poly, area] = part_areas[i];
-                
+
                 // If part is within tolerance of target, keep it
                 if (std::abs(area - target_area) / target_area <= tolerance) {
                     balanced.push_back(poly);
@@ -716,19 +716,19 @@ namespace concord {
                 }
                 // If part is too small, try to merge with adjacent small parts
                 else {
-                    balanced.push_back(poly);  // For now, just keep it
+                    balanced.push_back(poly); // For now, just keep it
                     // TODO: Implement merging logic for adjacent small parts
                 }
             }
-            
+
             // Report results
             std::cout << "Balanced " << parts.size() << " parts into " << balanced.size() << " parts" << std::endl;
             for (size_t i = 0; i < balanced.size(); ++i) {
                 double area = balanced[i].area();
-                std::cout << "  Part " << i << ": " << area << " sq.m (target: " << target_area 
+                std::cout << "  Part " << i << ": " << area << " sq.m (target: " << target_area
                           << ", deviation: " << std::abs(area - target_area) / target_area * 100 << "%)" << std::endl;
             }
-            
+
             return balanced;
         }
 

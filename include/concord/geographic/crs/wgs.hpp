@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../core/errors/error_handling.hpp"
+#include "../../math.hpp"
 #include "../wgs_to_enu.hpp"
 #include "datum.hpp"
 #include <cmath>
@@ -65,13 +65,11 @@ namespace concord {
             return std::fmod(bearing + 360.0, 360.0);
         }
 
-        inline bool operator==(const WGS& other) const {
+        inline bool operator==(const WGS &other) const {
             return lat == other.lat && lon == other.lon && alt == other.alt;
         }
 
-        inline bool operator!=(const WGS& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const WGS &other) const { return !(*this == other); }
     };
 
 } // namespace concord

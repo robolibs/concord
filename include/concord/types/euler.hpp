@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../math/math.hpp"
+#include "../math.hpp"
 #include <cmath>
 
 namespace concord {
@@ -29,13 +29,11 @@ namespace concord {
         }
         inline Euler operator*(double scale) const { return Euler{roll * scale, pitch * scale, yaw * scale}; }
 
-        inline bool operator==(const Euler& other) const {
+        inline bool operator==(const Euler &other) const {
             return roll == other.roll && pitch == other.pitch && yaw == other.yaw;
         }
 
-        inline bool operator!=(const Euler& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const Euler &other) const { return !(*this == other); }
 
         // Angle normalization
         inline Euler normalized() const {

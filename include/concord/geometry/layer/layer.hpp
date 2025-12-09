@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../../core/types.hpp"
-#include "../polygon/polygon.hpp"
+#include "../../types/point.hpp"
+#include "../../types/pose.hpp"
 #include "../grid/grid.hpp"
+#include "../polygon/polygon.hpp"
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -25,8 +26,8 @@ namespace concord {
         size_type rows_{0};
         size_type cols_{0};
         size_type layers_{0};
-        double inradius_{0.0};        // Cell size in XY plane
-        double layer_height_{0.0};    // Cell size in Z direction
+        double inradius_{0.0};     // Cell size in XY plane
+        double layer_height_{0.0}; // Cell size in Z direction
         bool centered_{false};
         bool reverse_y_{false};
         bool reverse_z_{false};
@@ -263,8 +264,8 @@ namespace concord {
         constexpr bool centered() const noexcept { return centered_; }
         constexpr bool reverse_y() const noexcept { return reverse_y_; }
         constexpr bool reverse_z() const noexcept { return reverse_z_; }
-        const concord::Pose& pose() const noexcept { return shift_; }
-        const concord::Pose& shift() const noexcept { return shift_; } // Alias for backward compatibility
+        const concord::Pose &pose() const noexcept { return shift_; }
+        const concord::Pose &shift() const noexcept { return shift_; } // Alias for backward compatibility
 
         // Data iterators
         inline auto begin() noexcept { return data_.begin(); }
@@ -321,7 +322,7 @@ namespace concord {
                 double row_d = (world_point.y - offset_y_) / inradius_ - 0.5;
                 double layer_d = (world_point.z - offset_z_) / layer_height_ - 0.5;
                 if (centered_) {
-                    layer_d -= 0.5;  // Account for centering offset added to z_coords_
+                    layer_d -= 0.5; // Account for centering offset added to z_coords_
                 }
 
                 if (reverse_y_) {
@@ -331,10 +332,10 @@ namespace concord {
                     layer_d = static_cast<double>(layers_ - 1) - layer_d;
                 }
 
-                size_type col = static_cast<size_type>(
-                    std::max(0.0, std::min(static_cast<double>(cols_ - 1), std::round(col_d))));
-                size_type row = static_cast<size_type>(
-                    std::max(0.0, std::min(static_cast<double>(rows_ - 1), std::round(row_d))));
+                size_type col =
+                    static_cast<size_type>(std::max(0.0, std::min(static_cast<double>(cols_ - 1), std::round(col_d))));
+                size_type row =
+                    static_cast<size_type>(std::max(0.0, std::min(static_cast<double>(rows_ - 1), std::round(row_d))));
                 size_type layer = static_cast<size_type>(
                     std::max(0.0, std::min(static_cast<double>(layers_ - 1), std::round(layer_d))));
 
@@ -363,7 +364,7 @@ namespace concord {
                 double row_d = (local_y + half_height_) / inradius_ - 0.5;
                 double layer_d = (local_z + half_depth_) / layer_height_ - 0.5;
                 if (centered_) {
-                    layer_d -= 0.5;  // Account for centering offset added to z_coords_
+                    layer_d -= 0.5; // Account for centering offset added to z_coords_
                 }
 
                 if (reverse_y_) {
@@ -373,10 +374,10 @@ namespace concord {
                     layer_d = static_cast<double>(layers_ - 1) - layer_d;
                 }
 
-                size_type col = static_cast<size_type>(
-                    std::max(0.0, std::min(static_cast<double>(cols_ - 1), std::round(col_d))));
-                size_type row = static_cast<size_type>(
-                    std::max(0.0, std::min(static_cast<double>(rows_ - 1), std::round(row_d))));
+                size_type col =
+                    static_cast<size_type>(std::max(0.0, std::min(static_cast<double>(cols_ - 1), std::round(col_d))));
+                size_type row =
+                    static_cast<size_type>(std::max(0.0, std::min(static_cast<double>(rows_ - 1), std::round(row_d))));
                 size_type layer = static_cast<size_type>(
                     std::max(0.0, std::min(static_cast<double>(layers_ - 1), std::round(layer_d))));
 
@@ -443,14 +444,15 @@ namespace concord {
             const size_type c0 = 0, c1 = cols_ - 1;
             const size_type l0 = 0, l1 = layers_ - 1;
 
-            return {get_point(r0, c0, l0), // front-bottom-left
-                    get_point(r0, c1, l0), // front-bottom-right
-                    get_point(r1, c1, l0), // back-bottom-right
-                    get_point(r1, c0, l0), // back-bottom-left
-                    get_point(r0, c0, l1), // front-top-left
-                    get_point(r0, c1, l1), // front-top-right
-                    get_point(r1, c1, l1), // back-top-right
-                    get_point(r1, c0, l1)  // back-top-left
+            return {
+                get_point(r0, c0, l0), // front-bottom-left
+                get_point(r0, c1, l0), // front-bottom-right
+                get_point(r1, c1, l0), // back-bottom-right
+                get_point(r1, c0, l0), // back-bottom-left
+                get_point(r0, c0, l1), // front-top-left
+                get_point(r0, c1, l1), // front-top-right
+                get_point(r1, c1, l1), // back-top-right
+                get_point(r1, c0, l1)  // back-top-left
             };
         }
     };

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../../geographic/crs/datum.hpp"
-#include "../math/math.hpp"
+#include "../math.hpp"
 #include <cmath>
 #include <tuple>
 
 namespace concord {
 
-    struct WGS; // forward declaration
+    struct WGS;   // forward declaration
+    struct Datum; // forward declaration
 
     struct Point {
         double x = 0.0;
@@ -55,13 +55,9 @@ namespace concord {
             return *this;
         }
 
-        inline bool operator==(const Point &other) const {
-            return x == other.x && y == other.y && z == other.z;
-        }
+        inline bool operator==(const Point &other) const { return x == other.x && y == other.y && z == other.z; }
 
-        inline bool operator!=(const Point &other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const Point &other) const { return !(*this == other); }
 
         // Distance and magnitude operations
         inline double magnitude() const { return std::sqrt(x * x + y * y + z * z); }

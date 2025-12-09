@@ -1,14 +1,14 @@
 #pragma once
 
-#include "../../core/types.hpp"
+#include "../../types/point.hpp"
 #include "polygon.hpp"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstring>
 #include <list>
-#include <vector>
 #include <memory>
-#include <array>
+#include <vector>
 
 namespace concord {
 
@@ -59,10 +59,13 @@ namespace concord {
         bool InCone(const Point &p1, const Point &p2, const Point &p3, const Point &p);
         bool InCone(std::shared_ptr<PartitionVertex> v, const Point &p);
         void UpdateVertexReflexity(std::shared_ptr<PartitionVertex> v);
-        void UpdateVertex(PartitionVertex *v, std::vector<std::shared_ptr<PartitionVertex>> &vertices, long numvertices);
+        void UpdateVertex(PartitionVertex *v, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
+                          long numvertices);
         void UpdateState(long a, long b, long w, long i, long j, std::vector<std::vector<DPState2>> &dpstates);
-        void TypeA(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices, std::vector<std::vector<DPState2>> &dpstates);
-        void TypeB(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices, std::vector<std::vector<DPState2>> &dpstates);
+        void TypeA(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
+                   std::vector<std::vector<DPState2>> &dpstates);
+        void TypeB(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
+                   std::vector<std::vector<DPState2>> &dpstates);
 
         // Main partitioning functions
         int Triangulate_EC(Polygon *poly, PolygonList *triangles);
@@ -215,8 +218,9 @@ namespace concord {
 
         auto prev = v->previous.lock();
         auto next = v->next.lock();
-        if (!prev || !next) return false;
-        
+        if (!prev || !next)
+            return false;
+
         p1 = prev->p;
         p2 = v->p;
         p3 = next->p;
@@ -227,16 +231,19 @@ namespace concord {
     inline void TPPLPartition::UpdateVertexReflexity(std::shared_ptr<PartitionVertex> v) {
         auto v1 = v->previous.lock();
         auto v3 = v->next.lock();
-        if (!v1 || !v3) return;
+        if (!v1 || !v3)
+            return;
         v->isConvex = !IsReflex(v1->p, v->p, v3->p);
     }
 
-    inline void TPPLPartition::UpdateVertex(PartitionVertex *v, std::vector<std::shared_ptr<PartitionVertex>> &vertices, long numvertices) {
+    inline void TPPLPartition::UpdateVertex(PartitionVertex *v, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
+                                            long numvertices) {
         long i;
         auto v1 = v->previous.lock();
         auto v3 = v->next.lock();
-        if (!v1 || !v3) return;
-        
+        if (!v1 || !v3)
+            return;
+
         Point vec1, vec3;
 
         v->isConvex = IsConvex(v1->p, v->p, v3->p);
@@ -294,7 +301,7 @@ namespace concord {
             vertices[i]->isActive = true;
             vertices[i]->p = points[i];
         }
-        
+
         // Set up circular links using weak_ptr
         for (i = 0; i < numvertices; i++) {
             if (i == (numvertices - 1)) {
@@ -308,7 +315,7 @@ namespace concord {
                 vertices[i]->previous = vertices[i - 1];
             }
         }
-        
+
         for (i = 0; i < numvertices; i++) {
             UpdateVertex(vertices[i].get(), vertices, numvertices);
         }
@@ -339,8 +346,9 @@ namespace concord {
             // Create triangle from three points
             auto prev = ear->previous.lock();
             auto next = ear->next.lock();
-            if (!prev || !next) return 0;
-            
+            if (!prev || !next)
+                return 0;
+
             std::vector<Point> trianglePoints = {prev->p, ear->p, next->p};
             triangle = Polygon(trianglePoints);
             triangles->push_back(triangle);
@@ -360,8 +368,9 @@ namespace concord {
             if (vertices[i]->isActive) {
                 auto prev = vertices[i]->previous.lock();
                 auto next = vertices[i]->next.lock();
-                if (!prev || !next) return 0;
-                
+                if (!prev || !next)
+                    return 0;
+
                 std::vector<Point> trianglePoints = {prev->p, vertices[i]->p, next->p};
                 triangle = Polygon(trianglePoints);
                 triangles->push_back(triangle);
@@ -598,7 +607,8 @@ namespace concord {
         return ret;
     }
 
-    inline void TPPLPartition::UpdateState(long a, long b, long w, long i, long j, std::vector<std::vector<DPState2>> &dpstates) {
+    inline void TPPLPartition::UpdateState(long a, long b, long w, long i, long j,
+                                           std::vector<std::vector<DPState2>> &dpstates) {
         Diagonal newdiagonal;
         DiagonalList *pairs = NULL;
         long w2;
@@ -627,7 +637,8 @@ namespace concord {
         }
     }
 
-    inline void TPPLPartition::TypeA(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices, std::vector<std::vector<DPState2>> &dpstates) {
+    inline void TPPLPartition::TypeA(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
+                                     std::vector<std::vector<DPState2>> &dpstates) {
         DiagonalList *pairs = NULL;
         DiagonalList::iterator iter, lastiter;
         long top;
@@ -669,7 +680,8 @@ namespace concord {
         UpdateState(i, k, w, top, j, dpstates);
     }
 
-    inline void TPPLPartition::TypeB(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices, std::vector<std::vector<DPState2>> &dpstates) {
+    inline void TPPLPartition::TypeB(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
+                                     std::vector<std::vector<DPState2>> &dpstates) {
         DiagonalList *pairs = NULL;
         DiagonalList::iterator iter, lastiter;
         long top;
@@ -747,7 +759,7 @@ namespace concord {
             vertices[i]->p = points[i];
             vertices[i]->isActive = true;
         }
-        
+
         // Set up circular links
         for (i = 0; i < n; i++) {
             if (i == 0) {
@@ -761,7 +773,7 @@ namespace concord {
                 vertices[i]->next = vertices[i + 1];
             }
         }
-        
+
         for (i = 1; i < n; i++) {
             UpdateVertexReflexity(vertices[i]);
         }

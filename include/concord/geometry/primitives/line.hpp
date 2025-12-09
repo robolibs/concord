@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../core/types.hpp"
+#include "../../types/point.hpp"
 #include <cmath>
 
 namespace concord {
@@ -25,13 +25,9 @@ namespace concord {
         inline void setStart(const Point &s) noexcept { start = s; }
         inline void setEnd(const Point &e) noexcept { end = e; }
 
-        inline bool operator==(const Line& other) const {
-            return start == other.start && end == other.end;
-        }
+        inline bool operator==(const Line &other) const { return start == other.start && end == other.end; }
 
-        inline bool operator!=(const Line& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const Line &other) const { return !(*this == other); }
 
       private:
         Point start;

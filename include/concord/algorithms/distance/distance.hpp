@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../core/types.hpp"
 #include "../../geometry/primitives/line.hpp"
+#include "../../types/point.hpp"
 #include <cmath>
 
 namespace concord {
