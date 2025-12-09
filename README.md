@@ -24,10 +24,12 @@ concord/
 │   ├── errors/              # Error handling
 │   └── precision/           # Precision handling
 ├── algorithms/              # Spatial algorithms
-│   ├── distance/            # Distance calculations
-│   ├── intersection/        # Intersection algorithms
-│   ├── convex_hull/         # Convex hull algorithms
-│   └── triangulation/       # Triangulation algorithms
+│   ├── algorithms.hpp       # Aggregate include for all algorithms
+│   ├── distance.hpp         # Distance calculations
+│   ├── intersection.hpp     # Intersection algorithms
+│   ├── convex_hull.hpp      # Convex hull algorithms
+│   ├── spatial_algorithms.hpp # General spatial helpers (hulls, buffers, clustering)
+│   └── triangulation.hpp    # Triangulation algorithms
 ├── geometry/                # Geometric shapes
 │   ├── primitives/          # Basic shapes (Circle, Line, etc.)
 │   ├── polygon/             # Polygon operations
@@ -192,22 +194,19 @@ Square square(center, side_length);
 
 #### Advanced Algorithms
 ```cpp
-#include <concord/algorithms/distance/distance.hpp>
-#include <concord/algorithms/intersection/intersection.hpp>
-#include <concord/algorithms/convex_hull/convex_hull.hpp>
-#include <concord/algorithms/triangulation/triangulation.hpp>
+#include <concord/algorithms/algorithms.hpp>
 
 // Distance calculations
 double dist = algorithms::distance::euclidean(p1, p2);
 double manhattan_dist = algorithms::distance::manhattan(p1, p2);
 
-// Intersection algorithms
+// Intersection algorithms (declarations only currently)
 auto intersection = algorithms::intersection::line_line(line1, line2);
 
 // Convex hull generation
 auto hull = algorithms::convex_hull::graham_scan(points);
 
-// Triangulation
+// Triangulation (API declared; implementation may be provided by the user or future versions)
 auto triangles = algorithms::triangulation::delaunay(points);
 ```
 
@@ -786,7 +785,7 @@ If you use Concord in your research, please cite:
 - **NEW**: Builder pattern for fluent coordinate transformations
 - **NEW**: Enhanced spatial indexing with R-Tree, QuadTree, and Hash Grid
 - **MOVED**: `math/` and `errors/` into `core/` for better organization
-- **RESTRUCTURED**: `spatial/` → `algorithms/` with specialized subdirectories
+- **RESTRUCTURED**: `spatial/` → `algorithms/` with a unified algorithms header (`algorithms.hpp`)
 - **ORGANIZED**: Geometry primitives into dedicated `primitives/` folder
 - **ADDED**: Geographic transformations and projections framework
 - **ENHANCED**: Comprehensive spatial algorithms suite
