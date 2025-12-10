@@ -140,6 +140,9 @@ release:
 		git cliff --tag $$version --unreleased --prepend CHANGELOG.md; \
 	fi; \
 	sed -i -E 's/(project\(.*VERSION )[0-9]+\.[0-9]+\.[0-9]+/\1'$$version'/' CMakeLists.txt; \
+	if [ -f xmake.lua ]; then \
+		sed -i -E 's/(set_version\(")[0-9]+\.[0-9]+\.[0-9]+/\1'$$version'/' xmake.lua; \
+	fi; \
 	git add -A && git commit -m "chore(release): prepare for $$version"; \
 	echo "$$changelog"; \
 	git tag -a $$version -m "$$version" -m "$$changelog"; \
