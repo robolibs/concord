@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../core/types/point.hpp"
 #include "../../geometry/bounding.hpp"
+#include "../../types/point.hpp"
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -24,19 +24,18 @@ namespace concord {
                 T data;
 
                 Entry(const AABB &bounds, const T &data) : bounds(bounds), data(data) {}
-                
-                bool operator==(const Entry& other) const {
-                    return bounds == other.bounds && data == other.data;
-                }
-                
-                bool operator!=(const Entry& other) const {
-                    return !(*this == other);
-                }
-                
-                bool operator<(const Entry& other) const {
-                    if (bounds.min_point.x != other.bounds.min_point.x) return bounds.min_point.x < other.bounds.min_point.x;
-                    if (bounds.min_point.y != other.bounds.min_point.y) return bounds.min_point.y < other.bounds.min_point.y;
-                    if (bounds.min_point.z != other.bounds.min_point.z) return bounds.min_point.z < other.bounds.min_point.z;
+
+                bool operator==(const Entry &other) const { return bounds == other.bounds && data == other.data; }
+
+                bool operator!=(const Entry &other) const { return !(*this == other); }
+
+                bool operator<(const Entry &other) const {
+                    if (bounds.min_point.x != other.bounds.min_point.x)
+                        return bounds.min_point.x < other.bounds.min_point.x;
+                    if (bounds.min_point.y != other.bounds.min_point.y)
+                        return bounds.min_point.y < other.bounds.min_point.y;
+                    if (bounds.min_point.z != other.bounds.min_point.z)
+                        return bounds.min_point.z < other.bounds.min_point.z;
                     return false; // For data comparison, we could add this if T supports it
                 }
             };
@@ -135,10 +134,10 @@ namespace concord {
             std::vector<Entry> k_nearest_neighbors(const Point &point, size_t k) const {
                 std::vector<std::pair<double, Entry>> candidates;
                 k_nearest_recursive(root_, point, candidates);
-                
+
                 // Sort by distance and take first k
                 std::sort(candidates.begin(), candidates.end());
-                
+
                 std::vector<Entry> results;
                 size_t count = std::min(k, candidates.size());
                 for (size_t i = 0; i < count; ++i) {
@@ -166,12 +165,12 @@ namespace concord {
                     // Find the child node with minimum area increase
                     auto best_child = choose_subtree(node, entry.bounds);
                     auto new_child = insert_entry(best_child, entry);
-                    
+
                     if (new_child) {
                         // Child was split, add the new child to this node
                         node->children.push_back(new_child);
                         update_bounds(node);
-                        
+
                         if (node->children.size() > max_entries_) {
                             return split_node(node);
                         }
@@ -190,10 +189,9 @@ namespace concord {
                 for (auto &child : node->children) {
                     double current_area = child->bounds.area();
                     double enlargement = child->bounds.union_with(bounds).area() - current_area;
-                    
+
                     // R*-tree: prefer minimum enlargement, then minimum area
-                    if (enlargement < min_enlargement || 
-                        (enlargement == min_enlargement && current_area < min_area)) {
+                    if (enlargement < min_enlargement || (enlargement == min_enlargement && current_area < min_area)) {
                         min_enlargement = enlargement;
                         min_area = current_area;
                         best_child = child;
@@ -294,11 +292,11 @@ namespace concord {
 
             void split_entries_quadratic(std::shared_ptr<Node> node, std::shared_ptr<Node> new_node) {
                 auto &entries = node->entries;
-                
+
                 // Find the two entries with maximum separation
                 size_t seed1 = 0, seed2 = 1;
                 double max_waste = -1;
-                
+
                 for (size_t i = 0; i < entries.size(); ++i) {
                     for (size_t j = i + 1; j < entries.size(); ++j) {
                         AABB combined = entries[i].bounds.union_with(entries[j].bounds);
@@ -310,11 +308,11 @@ namespace concord {
                         }
                     }
                 }
-                
+
                 // Store seeds before modifying the vector
                 Entry seed1_entry = entries[seed1];
                 Entry seed2_entry = entries[seed2];
-                
+
                 // Remove seeds from entries (remove higher index first to avoid index shift)
                 if (seed1 > seed2) {
                     entries.erase(entries.begin() + seed1);
@@ -323,25 +321,25 @@ namespace concord {
                     entries.erase(entries.begin() + seed2);
                     entries.erase(entries.begin() + seed1);
                 }
-                
+
                 // Distribute remaining entries
                 std::vector<Entry> remaining = entries;
-                
+
                 // Clear original entries and start fresh with seed1
                 entries.clear();
                 entries.push_back(seed1_entry);
-                
+
                 // New node starts with seed2
                 new_node->entries.push_back(seed2_entry);
-                
+
                 for (const auto &entry : remaining) {
                     // Calculate cost of adding to each group
                     AABB node_bounds = calculate_bounds_entries(node->entries);
                     AABB new_node_bounds = calculate_bounds_entries(new_node->entries);
-                    
+
                     double cost1 = node_bounds.union_with(entry.bounds).area() - node_bounds.area();
                     double cost2 = new_node_bounds.union_with(entry.bounds).area() - new_node_bounds.area();
-                    
+
                     if (cost1 < cost2 || (cost1 == cost2 && node->entries.size() < new_node->entries.size())) {
                         node->entries.push_back(entry);
                     } else {
@@ -349,14 +347,14 @@ namespace concord {
                     }
                 }
             }
-            
+
             void split_children_quadratic(std::shared_ptr<Node> node, std::shared_ptr<Node> new_node) {
                 auto &children = node->children;
-                
+
                 // Find the two children with maximum separation
                 size_t seed1 = 0, seed2 = 1;
                 double max_waste = -1;
-                
+
                 for (size_t i = 0; i < children.size(); ++i) {
                     for (size_t j = i + 1; j < children.size(); ++j) {
                         AABB combined = children[i]->bounds.union_with(children[j]->bounds);
@@ -368,11 +366,11 @@ namespace concord {
                         }
                     }
                 }
-                
+
                 // Store seeds before modifying the vector
                 auto seed1_child = children[seed1];
                 auto seed2_child = children[seed2];
-                
+
                 // Remove seeds from children (remove higher index first to avoid index shift)
                 if (seed1 > seed2) {
                     children.erase(children.begin() + seed1);
@@ -381,25 +379,25 @@ namespace concord {
                     children.erase(children.begin() + seed2);
                     children.erase(children.begin() + seed1);
                 }
-                
+
                 // Distribute remaining children
                 std::vector<std::shared_ptr<Node>> remaining = children;
-                
+
                 // Clear original children and start fresh with seed1
                 children.clear();
                 children.push_back(seed1_child);
-                
+
                 // New node starts with seed2
                 new_node->children.push_back(seed2_child);
-                
+
                 for (const auto &child : remaining) {
                     // Calculate cost of adding to each group
                     AABB node_bounds = calculate_bounds_children(node->children);
                     AABB new_node_bounds = calculate_bounds_children(new_node->children);
-                    
+
                     double cost1 = node_bounds.union_with(child->bounds).area() - node_bounds.area();
                     double cost2 = new_node_bounds.union_with(child->bounds).area() - new_node_bounds.area();
-                    
+
                     if (cost1 < cost2 || (cost1 == cost2 && node->children.size() < new_node->children.size())) {
                         node->children.push_back(child);
                     } else {
@@ -407,24 +405,24 @@ namespace concord {
                     }
                 }
             }
-            
+
             AABB calculate_bounds_entries(const std::vector<Entry> &entries) const {
                 if (entries.empty()) {
                     return AABB();
                 }
-                
+
                 AABB bounds = entries[0].bounds;
                 for (size_t i = 1; i < entries.size(); ++i) {
                     bounds = bounds.union_with(entries[i].bounds);
                 }
                 return bounds;
             }
-            
+
             AABB calculate_bounds_children(const std::vector<std::shared_ptr<Node>> &children) const {
                 if (children.empty()) {
                     return AABB();
                 }
-                
+
                 AABB bounds = children[0]->bounds;
                 for (size_t i = 1; i < children.size(); ++i) {
                     bounds = bounds.union_with(children[i]->bounds);
@@ -458,9 +456,10 @@ namespace concord {
                 }
             }
 
-            void k_nearest_recursive(std::shared_ptr<Node> node, const Point &point, 
-                                   std::vector<std::pair<double, Entry>> &candidates) const {
-                if (!node) return;
+            void k_nearest_recursive(std::shared_ptr<Node> node, const Point &point,
+                                     std::vector<std::pair<double, Entry>> &candidates) const {
+                if (!node)
+                    return;
 
                 if (node->is_leaf) {
                     // Add all entries with their distances
@@ -475,9 +474,9 @@ namespace concord {
                         double min_distance = child->bounds.distance_to_point(point);
                         child_distances.emplace_back(min_distance, child);
                     }
-                    
+
                     std::sort(child_distances.begin(), child_distances.end());
-                    
+
                     for (const auto &[distance, child] : child_distances) {
                         k_nearest_recursive(child, point, candidates);
                     }

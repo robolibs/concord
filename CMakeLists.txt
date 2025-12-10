@@ -14,6 +14,7 @@ set(params
     -Wno-reorder
     -Wno-unused-parameter
     -Wno-unused-variable
+    -Wno-unused-but-set-variable
 )
 
 string(TOUPPER ${project_name} project_name_upper)
@@ -26,13 +27,27 @@ set(ext_deps)
 
 
 # --------------------------------------------------------------------------------------------------
-add_library(${project_name} INTERFACE)
+# Collect all source files from src directory
+file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+
+# Create library - STATIC if we have sources, INTERFACE if header-only
+if(LIB_SOURCES)
+    add_library(${project_name} STATIC ${LIB_SOURCES})
+    target_include_directories(${project_name} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+    target_compile_options(${project_name} PRIVATE ${params})
+else()
+    add_library(${project_name} INTERFACE)
+    target_include_directories(${project_name} INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    )
+endif()
+
 # Allow users to link via `${project_name}::${project_name}`
 add_library(${project_name}::${project_name} ALIAS ${project_name})
-target_include_directories(${project_name} INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
 
 install(
   DIRECTORY include/
@@ -66,9 +81,7 @@ export(EXPORT ${project_name}Targets
 # --------------------------------------------------------------------------------------------------
 if(${project_name_upper}_BUILD_EXAMPLES)
   add_definitions(-DHAS_RERUN)
-  set(RERUN_DOWNLOAD_AND_BUILD_ARROW OFF)
-  FetchContent_Declare(rerun_sdk URL https://github.com/rerun-io/rerun/releases/latest/download/rerun_cpp_sdk.zip)
-  FetchContent_MakeAvailable(rerun_sdk)
+  find_package(rerun_sdk QUIET)
   list(APPEND ext_deps rerun_sdk)
 
   file(GLOB exe CONFIGURE_DEPENDS examples/*.cpp)
@@ -77,11 +90,8 @@ if(${project_name_upper}_BUILD_EXAMPLES)
   foreach(src_file IN LISTS exe)
     get_filename_component(exec_name "${src_file}" NAME_WE)
     add_executable(${exec_name} "${src_file}")
-      foreach(lib_file IN LISTS internal_deps)
-        target_compile_options(${exec_name} PRIVATE ${params})
-        target_sources(${exec_name} PRIVATE "${lib_file}")
-      endforeach()
-    target_link_libraries(${exec_name} ${ext_deps})
+    target_compile_options(${exec_name} PRIVATE ${params})
+    target_link_libraries(${exec_name} ${project_name}::${project_name} ${ext_deps})
     install(TARGETS ${exec_name} DESTINATION bin)
     list(APPEND exec_names ${exec_name})
   endforeach()
@@ -116,11 +126,8 @@ if(${project_name_upper}_ENABLE_TESTS)
   foreach(src_file IN LISTS test_src)
     get_filename_component(test_name "${src_file}" NAME_WE)
     add_executable(${test_name} "${src_file}")
-      foreach(lib_file IN LISTS internal_deps)
-        target_compile_options(${test_name} PRIVATE ${params})
-        target_sources(${test_name} PRIVATE "${lib_file}")
-      endforeach()
-    target_link_libraries(${test_name} ${ext_deps} doctest_with_main)
+    target_compile_options(${test_name} PRIVATE ${params})
+    target_link_libraries(${test_name} ${project_name}::${project_name} doctest_with_main)
     add_test(NAME ${test_name} COMMAND ${test_name})
   endforeach()
 endif()

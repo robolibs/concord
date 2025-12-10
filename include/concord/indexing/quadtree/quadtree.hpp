@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../core/types.hpp"
 #include "../../geometry/bounding.hpp"
+#include "../../types/point.hpp"
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -24,19 +24,18 @@ namespace concord {
                 T data;
 
                 Entry(const Point &p, const T &d) : point(p), data(d) {}
-                
-                bool operator==(const Entry& other) const {
-                    return point == other.point && data == other.data;
-                }
-                
-                bool operator!=(const Entry& other) const {
-                    return !(*this == other);
-                }
-                
-                bool operator<(const Entry& other) const {
-                    if (point.x != other.point.x) return point.x < other.point.x;
-                    if (point.y != other.point.y) return point.y < other.point.y;
-                    if (point.z != other.point.z) return point.z < other.point.z;
+
+                bool operator==(const Entry &other) const { return point == other.point && data == other.data; }
+
+                bool operator!=(const Entry &other) const { return !(*this == other); }
+
+                bool operator<(const Entry &other) const {
+                    if (point.x != other.point.x)
+                        return point.x < other.point.x;
+                    if (point.y != other.point.y)
+                        return point.y < other.point.y;
+                    if (point.z != other.point.z)
+                        return point.z < other.point.z;
                     return false; // For data comparison, we could add this if T supports it
                 }
             };
@@ -63,9 +62,9 @@ namespace concord {
                     children[2] = std::make_unique<Node>(
                         AABB{Point{boundary.min_point.x, boundary.min_point.y, boundary.min_point.z},
                              Point{center.x, center.y, boundary.max_point.z}});
-                    children[3] = std::make_unique<Node>(
-                        AABB{Point{center.x, boundary.min_point.y, boundary.min_point.z},
-                             Point{boundary.max_point.x, center.y, boundary.max_point.z}});
+                    children[3] =
+                        std::make_unique<Node>(AABB{Point{center.x, boundary.min_point.y, boundary.min_point.z},
+                                                    Point{boundary.max_point.x, center.y, boundary.max_point.z}});
                 }
             };
 
@@ -133,12 +132,13 @@ namespace concord {
             }
 
             void queryRadius(Node *node, const Point &center, double radius, std::vector<Entry> &results) const {
-                if (!node) return;
+                if (!node)
+                    return;
 
                 // Quick AABB check first
                 AABB query_box{Point{center.x - radius, center.y - radius, center.z - radius},
                                Point{center.x + radius, center.y + radius, center.z + radius}};
-                
+
                 if (!node->boundary.intersects(query_box)) {
                     return;
                 }
@@ -185,9 +185,10 @@ namespace concord {
                 return false;
             }
 
-            void kNearest(Node *node, const Point &point, size_t k, 
-                         std::vector<std::pair<double, Entry>> &candidates) const {
-                if (!node) return;
+            void kNearest(Node *node, const Point &point, size_t k,
+                          std::vector<std::pair<double, Entry>> &candidates) const {
+                if (!node)
+                    return;
 
                 // Add all entries from this node
                 for (const auto &entry : node->entries) {
@@ -206,9 +207,9 @@ namespace concord {
                             child_distances.emplace_back(min_dist * min_dist, i);
                         }
                     }
-                    
+
                     std::sort(child_distances.begin(), child_distances.end());
-                    
+
                     for (const auto &[dist, child_idx] : child_distances) {
                         kNearest(node->children[child_idx].get(), point, k, candidates);
                     }
@@ -216,8 +217,9 @@ namespace concord {
             }
 
             size_t countEntries(Node *node) const {
-                if (!node) return 0;
-                
+                if (!node)
+                    return 0;
+
                 size_t count = node->entries.size();
                 if (!node->isLeaf()) {
                     for (int i = 0; i < 4; ++i) {
@@ -270,9 +272,7 @@ namespace concord {
              * @param data The data to remove
              * @return True if the entry was found and removed
              */
-            bool remove(const Point &point, const T &data) {
-                return remove(root_.get(), point, data);
-            }
+            bool remove(const Point &point, const T &data) { return remove(root_.get(), point, data); }
 
             /**
              * @brief Find k nearest neighbors to a point
@@ -283,10 +283,10 @@ namespace concord {
             std::vector<Entry> kNearestNeighbors(const Point &point, size_t k) const {
                 std::vector<std::pair<double, Entry>> candidates;
                 kNearest(root_.get(), point, k, candidates);
-                
+
                 // Sort by distance and take first k
                 std::sort(candidates.begin(), candidates.end());
-                
+
                 std::vector<Entry> results;
                 size_t count = std::min(k, candidates.size());
                 for (size_t i = 0; i < count; ++i) {
@@ -303,14 +303,12 @@ namespace concord {
             /**
              * @brief Clear all entries from the QuadTree
              */
-            void clear() { 
-                root_ = std::make_unique<Node>(root_->boundary);
-            }
+            void clear() { root_ = std::make_unique<Node>(root_->boundary); }
 
             /**
              * @brief Get the boundary of the QuadTree
              */
-            const AABB& getBoundary() const { return root_->boundary; }
+            const AABB &getBoundary() const { return root_->boundary; }
         };
 
     } // namespace indexing

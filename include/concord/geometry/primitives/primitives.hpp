@@ -5,6 +5,7 @@
 #include "line.hpp"
 #include "rectangle.hpp"
 #include "square.hpp"
+#include "triangle.hpp"
 
 namespace concord {
     namespace geometry {
