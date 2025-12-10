@@ -21,8 +21,8 @@ namespace concord {
                             const Point &curr = verts[i];
                             const Point &next = verts[(i + 1) % verts.size()];
 
-                            double cross = (curr.x - prev.x) * (next.y - prev.y) -
-                                           (curr.y - prev.y) * (next.x - prev.x);
+                            double cross =
+                                (curr.x - prev.x) * (next.y - prev.y) - (curr.y - prev.y) * (next.x - prev.x);
                             if (cross <= 0) {
                                 continue;
                             }
@@ -54,10 +54,8 @@ namespace concord {
                 return ear_clipping_impl(points);
             }
 
-            std::vector<Triangle> ear_clipping(const std::vector<Point> &polygon) {
-                return ear_clipping_impl(polygon);
-            }
+            std::vector<Triangle> ear_clipping(const std::vector<Point> &polygon) { return ear_clipping_impl(polygon); }
 
         } // namespace triangulation
-    }     // namespace algorithms
+    } // namespace algorithms
 } // namespace concord

@@ -7,17 +7,11 @@ namespace concord {
 
     Polygon::Polygon(const std::vector<Point> &pts) : points(pts) {}
 
-    void Polygon::addPoint(const Point &p) { 
-        points.emplace_back(p); 
-    }
+    void Polygon::addPoint(const Point &p) { points.emplace_back(p); }
 
-    std::size_t Polygon::numVertices() const noexcept { 
-        return points.size(); 
-    }
+    std::size_t Polygon::numVertices() const noexcept { return points.size(); }
 
-    bool Polygon::isConnected() const noexcept { 
-        return points.size() >= 3; 
-    }
+    bool Polygon::isConnected() const noexcept { return points.size() >= 3; }
 
     double Polygon::perimeter() const noexcept {
         if (points.size() < 2)
@@ -71,9 +65,7 @@ namespace concord {
         return p;
     }
 
-    Polygon Polygon::from_rectangle(Size size, Size inflate) const {
-        return from_rectangle(size.x, size.y, inflate);
-    }
+    Polygon Polygon::from_rectangle(Size size, Size inflate) const { return from_rectangle(size.x, size.y, inflate); }
 
     Bound Polygon::get_obb() const {
         if (points.empty()) {
@@ -127,36 +119,20 @@ namespace concord {
         return concord::Bound(pose, size);
     }
 
-    auto Polygon::begin() noexcept { 
-        return points.begin(); 
-    }
+    auto Polygon::begin() noexcept { return points.begin(); }
 
-    auto Polygon::end() noexcept { 
-        return points.end(); 
-    }
+    auto Polygon::end() noexcept { return points.end(); }
 
-    auto Polygon::begin() const noexcept { 
-        return points.begin(); 
-    }
+    auto Polygon::begin() const noexcept { return points.begin(); }
 
-    auto Polygon::end() const noexcept { 
-        return points.end(); 
-    }
+    auto Polygon::end() const noexcept { return points.end(); }
 
-    const std::vector<Point> &Polygon::getPoints() const noexcept { 
-        return points; 
-    }
+    const std::vector<Point> &Polygon::getPoints() const noexcept { return points; }
 
-    AABB Polygon::getAABB() const { 
-        return AABB::fromPoints(points); 
-    }
+    AABB Polygon::getAABB() const { return AABB::fromPoints(points); }
 
-    bool Polygon::operator==(const Polygon &other) const { 
-        return points == other.points; 
-    }
+    bool Polygon::operator==(const Polygon &other) const { return points == other.points; }
 
-    bool Polygon::operator!=(const Polygon &other) const { 
-        return !(*this == other); 
-    }
+    bool Polygon::operator!=(const Polygon &other) const { return !(*this == other); }
 
 } // namespace concord

@@ -299,4 +299,3 @@ namespace concord {
     } // namespace spatial
 
 } // namespace concord
-

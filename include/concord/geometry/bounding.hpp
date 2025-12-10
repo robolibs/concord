@@ -19,8 +19,7 @@ namespace concord {
         AABB(const Point &min_p, const Point &max_p);
 
         // Create AABB from collection of points (template must stay in header)
-        template <typename Container> 
-        static AABB fromPoints(const Container &points) {
+        template <typename Container> static AABB fromPoints(const Container &points) {
             if (points.empty()) {
                 return AABB{};
             }
@@ -61,8 +60,7 @@ namespace concord {
         OBB(const Point &c, const Size &he, const Euler &orient);
 
         // Create OBB from points (template must stay in header)
-        template <typename Container> 
-        static OBB fromPoints(const Container &points, const Datum & /* datum */ = {}) {
+        template <typename Container> static OBB fromPoints(const Container &points, const Datum & /* datum */ = {}) {
             if (points.empty()) {
                 return OBB{};
             }
@@ -70,9 +68,7 @@ namespace concord {
             // For now, use AABB as approximation
             // TODO: Implement proper PCA-based OBB fitting
             auto aabb = AABB::fromPoints(points);
-            return OBB{aabb.center(), 
-                      Size{aabb.size().x * 0.5, aabb.size().y * 0.5, aabb.size().z * 0.5}, 
-                      Euler{}};
+            return OBB{aabb.center(), Size{aabb.size().x * 0.5, aabb.size().y * 0.5, aabb.size().z * 0.5}, Euler{}};
         }
 
         bool contains(const Point &point) const;
@@ -90,8 +86,7 @@ namespace concord {
         BoundingSphere(const Point &c, double r);
 
         // Create BoundingSphere from points (template must stay in header)
-        template <typename Container> 
-        static BoundingSphere fromPoints(const Container &points) {
+        template <typename Container> static BoundingSphere fromPoints(const Container &points) {
             if (points.empty()) {
                 return BoundingSphere{};
             }

@@ -22,4 +22,3 @@ namespace concord {
         } // namespace distance
     } // namespace algorithms
 } // namespace concord
-

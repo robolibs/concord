@@ -18,8 +18,7 @@ namespace concord {
     }
 
     bool AABB::contains(const Point &point) const {
-        return (point.x >= min_point.x && point.x <= max_point.x && 
-                point.y >= min_point.y && point.y <= max_point.y && 
+        return (point.x >= min_point.x && point.x <= max_point.x && point.y >= min_point.y && point.y <= max_point.y &&
                 point.z >= min_point.z && point.z <= max_point.z);
     }
 
@@ -38,9 +37,7 @@ namespace concord {
     }
 
     Size AABB::size() const {
-        return Size{max_point.x - min_point.x, 
-                   max_point.y - min_point.y, 
-                   max_point.z - min_point.z};
+        return Size{max_point.x - min_point.x, max_point.y - min_point.y, max_point.z - min_point.z};
     }
 
     double AABB::volume() const {
@@ -64,9 +61,7 @@ namespace concord {
         return result;
     }
 
-    double AABB::area() const { 
-        return volume(); 
-    }
+    double AABB::area() const { return volume(); }
 
     double AABB::distance_to_point(const Point &point) const {
         Point closest_point;
@@ -77,27 +72,20 @@ namespace concord {
     }
 
     std::array<Point, 8> AABB::corners() const {
-        return {Point{min_point.x, min_point.y, min_point.z}, 
-                Point{max_point.x, min_point.y, min_point.z},
-                Point{max_point.x, max_point.y, min_point.z}, 
-                Point{min_point.x, max_point.y, min_point.z},
-                Point{min_point.x, min_point.y, max_point.z}, 
-                Point{max_point.x, min_point.y, max_point.z},
-                Point{max_point.x, max_point.y, max_point.z}, 
-                Point{min_point.x, max_point.y, max_point.z}};
+        return {Point{min_point.x, min_point.y, min_point.z}, Point{max_point.x, min_point.y, min_point.z},
+                Point{max_point.x, max_point.y, min_point.z}, Point{min_point.x, max_point.y, min_point.z},
+                Point{min_point.x, min_point.y, max_point.z}, Point{max_point.x, min_point.y, max_point.z},
+                Point{max_point.x, max_point.y, max_point.z}, Point{min_point.x, max_point.y, max_point.z}};
     }
 
     bool AABB::operator==(const AABB &other) const {
         return min_point == other.min_point && max_point == other.max_point;
     }
 
-    bool AABB::operator!=(const AABB &other) const { 
-        return !(*this == other); 
-    }
+    bool AABB::operator!=(const AABB &other) const { return !(*this == other); }
 
     // OBB Implementation
-    OBB::OBB(const Point &c, const Size &he, const Euler &orient) 
-        : center(c), half_extents(he), orientation(orient) {}
+    OBB::OBB(const Point &c, const Size &he, const Euler &orient) : center(c), half_extents(he), orientation(orient) {}
 
     bool OBB::contains(const Point &point) const {
         double dx = point.x - center.x;
@@ -111,23 +99,21 @@ namespace concord {
         double local_y = dx * sin_yaw + dy * cos_yaw;
         double local_z = dz;
 
-        return (std::abs(local_x) <= half_extents.x && 
-                std::abs(local_y) <= half_extents.y &&
+        return (std::abs(local_x) <= half_extents.x && std::abs(local_y) <= half_extents.y &&
                 std::abs(local_z) <= half_extents.z);
     }
 
     std::array<Point, 8> OBB::corners() const {
         std::array<Point, 8> corners;
 
-        std::array<std::array<double, 3>, 8> local_corners = {
-            {{{-half_extents.x, -half_extents.y, -half_extents.z}},
-             {{+half_extents.x, -half_extents.y, -half_extents.z}},
-             {{+half_extents.x, +half_extents.y, -half_extents.z}},
-             {{-half_extents.x, +half_extents.y, -half_extents.z}},
-             {{-half_extents.x, -half_extents.y, +half_extents.z}},
-             {{+half_extents.x, -half_extents.y, +half_extents.z}},
-             {{+half_extents.x, +half_extents.y, +half_extents.z}},
-             {{-half_extents.x, +half_extents.y, +half_extents.z}}}};
+        std::array<std::array<double, 3>, 8> local_corners = {{{{-half_extents.x, -half_extents.y, -half_extents.z}},
+                                                               {{+half_extents.x, -half_extents.y, -half_extents.z}},
+                                                               {{+half_extents.x, +half_extents.y, -half_extents.z}},
+                                                               {{-half_extents.x, +half_extents.y, -half_extents.z}},
+                                                               {{-half_extents.x, -half_extents.y, +half_extents.z}},
+                                                               {{+half_extents.x, -half_extents.y, +half_extents.z}},
+                                                               {{+half_extents.x, +half_extents.y, +half_extents.z}},
+                                                               {{-half_extents.x, +half_extents.y, +half_extents.z}}}};
 
         double cos_yaw = std::cos(orientation.yaw);
         double sin_yaw = std::sin(orientation.yaw);
@@ -148,14 +134,10 @@ namespace concord {
     }
 
     bool OBB::operator==(const OBB &other) const {
-        return center == other.center && 
-               half_extents == other.half_extents && 
-               orientation == other.orientation;
+        return center == other.center && half_extents == other.half_extents && orientation == other.orientation;
     }
 
-    bool OBB::operator!=(const OBB &other) const { 
-        return !(*this == other); 
-    }
+    bool OBB::operator!=(const OBB &other) const { return !(*this == other); }
 
     // BoundingSphere Implementation
     BoundingSphere::BoundingSphere(const Point &c, double r) : center(c), radius(r) {}
@@ -177,20 +159,14 @@ namespace concord {
         return dist_sq <= sum_radii * sum_radii;
     }
 
-    double BoundingSphere::volume() const { 
-        return (4.0 / 3.0) * M_PI * radius * radius * radius; 
-    }
+    double BoundingSphere::volume() const { return (4.0 / 3.0) * M_PI * radius * radius * radius; }
 
-    double BoundingSphere::surface_area() const { 
-        return 4.0 * M_PI * radius * radius; 
-    }
+    double BoundingSphere::surface_area() const { return 4.0 * M_PI * radius * radius; }
 
     bool BoundingSphere::operator==(const BoundingSphere &other) const {
         return center == other.center && radius == other.radius;
     }
 
-    bool BoundingSphere::operator!=(const BoundingSphere &other) const { 
-        return !(*this == other); 
-    }
+    bool BoundingSphere::operator!=(const BoundingSphere &other) const { return !(*this == other); }
 
 } // namespace concord

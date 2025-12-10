@@ -5,4 +5,3 @@
 #include "intersection.hpp"
 #include "spatial_algorithms.hpp"
 #include "triangulation.hpp"
-

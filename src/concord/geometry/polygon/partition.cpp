@@ -157,7 +157,7 @@ namespace concord {
     }
 
     void TPPLPartition::UpdateVertex(PartitionVertex *v, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
-                                            long numvertices) {
+                                     long numvertices) {
         long i;
         auto v1 = v->previous.lock();
         auto v3 = v->next.lock();
@@ -528,7 +528,7 @@ namespace concord {
     }
 
     void TPPLPartition::UpdateState(long a, long b, long w, long i, long j,
-                                           std::vector<std::vector<DPState2>> &dpstates) {
+                                    std::vector<std::vector<DPState2>> &dpstates) {
         Diagonal newdiagonal;
         DiagonalList *pairs = NULL;
         long w2;
@@ -558,7 +558,7 @@ namespace concord {
     }
 
     void TPPLPartition::TypeA(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
-                                     std::vector<std::vector<DPState2>> &dpstates) {
+                              std::vector<std::vector<DPState2>> &dpstates) {
         DiagonalList *pairs = NULL;
         DiagonalList::iterator iter, lastiter;
         long top;
@@ -601,7 +601,7 @@ namespace concord {
     }
 
     void TPPLPartition::TypeB(long i, long j, long k, std::vector<std::shared_ptr<PartitionVertex>> &vertices,
-                                     std::vector<std::vector<DPState2>> &dpstates) {
+                              std::vector<std::vector<DPState2>> &dpstates) {
         DiagonalList *pairs = NULL;
         DiagonalList::iterator iter, lastiter;
         long top;

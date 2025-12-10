@@ -25,4 +25,3 @@ namespace concord {
         } // namespace triangulation
     } // namespace algorithms
 } // namespace concord
-

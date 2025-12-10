@@ -53,9 +53,7 @@ namespace concord {
                 }
             } // namespace
 
-            std::vector<Point> graham_scan(const std::vector<Point> &points) {
-                return graham_scan_impl(points);
-            }
+            std::vector<Point> graham_scan(const std::vector<Point> &points) { return graham_scan_impl(points); }
 
             std::vector<Point> quickhull(const std::vector<Point> &points) {
                 // For now, reuse Graham scan as a simple convex hull implementation.
@@ -93,6 +91,5 @@ namespace concord {
             }
 
         } // namespace convex_hull
-    }     // namespace algorithms
+    } // namespace algorithms
 } // namespace concord
-

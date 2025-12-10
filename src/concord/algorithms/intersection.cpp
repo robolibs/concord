@@ -23,10 +23,10 @@ namespace concord {
                     return std::nullopt;
                 }
 
-                double t = (plane_normal.x * (plane_point.x - ray_origin.x) +
-                            plane_normal.y * (plane_point.y - ray_origin.y) +
-                            plane_normal.z * (plane_point.z - ray_origin.z)) /
-                           denom;
+                double t =
+                    (plane_normal.x * (plane_point.x - ray_origin.x) + plane_normal.y * (plane_point.y - ray_origin.y) +
+                     plane_normal.z * (plane_point.z - ray_origin.z)) /
+                    denom;
 
                 if (t < 0.0) {
                     return std::nullopt;
@@ -62,5 +62,5 @@ namespace concord {
             }
 
         } // namespace intersection
-    }     // namespace algorithms
+    } // namespace algorithms
 } // namespace concord

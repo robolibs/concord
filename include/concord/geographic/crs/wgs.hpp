@@ -17,7 +17,7 @@ namespace concord {
 
         WGS(double lat_, double lon_, double alt_);
         WGS() = default;
-        
+
         operator Datum() const noexcept;
         bool is_set() const;
 

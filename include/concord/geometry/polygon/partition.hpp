@@ -81,4 +81,3 @@ namespace concord {
     };
 
 } // namespace concord
-

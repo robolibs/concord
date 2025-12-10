@@ -19,4 +19,3 @@ namespace concord {
         } // namespace convex_hull
     } // namespace algorithms
 } // namespace concord
-

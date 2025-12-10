@@ -22,4 +22,3 @@ namespace concord {
         } // namespace intersection
     } // namespace algorithms
 } // namespace concord
-

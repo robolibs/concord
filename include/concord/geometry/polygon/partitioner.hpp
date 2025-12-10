@@ -54,7 +54,8 @@ namespace concord {
         std::vector<Polygon> split_by_elongation(const Polygon &poly) const;
         std::vector<Polygon> split_by_grid(const Polygon &poly, int divisions) const;
         std::vector<Polygon> split_by_area_equal(const Polygon &poly, int num_parts) const;
-        std::vector<Polygon> balance_part_areas(const std::vector<Polygon> &parts, double target_area, double tolerance) const;
+        std::vector<Polygon> balance_part_areas(const std::vector<Polygon> &parts, double target_area,
+                                                double tolerance) const;
         bool should_split(const Polygon &poly) const;
         std::vector<Polygon> split_vertically(const Polygon &poly) const;
         std::vector<Polygon> split_horizontally(const Polygon &poly) const;

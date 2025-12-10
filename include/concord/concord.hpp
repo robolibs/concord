@@ -13,9 +13,9 @@
 #include "geometry/grid/grid.hpp"
 #include "geometry/layer/layer.hpp"
 #include "geometry/path.hpp"
-#include "geometry/polygon/polygon.hpp"
 #include "geometry/polygon/partition.hpp"
 #include "geometry/polygon/partitioner.hpp"
+#include "geometry/polygon/polygon.hpp"
 #include "geometry/primitives/primitives.hpp"
 
 // Advanced spatial types
@@ -30,8 +30,8 @@
 #include "algorithms/algorithms.hpp"
 
 // Spatial indexing structures
-#include "indexing/indexing.hpp"
 #include "indexing/hash_grid/spatial_hash_grid.hpp"
+#include "indexing/indexing.hpp"
 
 namespace concord {
     // Library capabilities
