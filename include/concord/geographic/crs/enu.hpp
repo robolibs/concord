@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../core/types/point.hpp"
+#include "../../types/point.hpp"
 #include "../wgs_to_enu.hpp"
 #include "datum.hpp"
 
@@ -15,12 +15,8 @@ namespace concord {
 
         WGS toWGS() const;
 
-        inline bool operator==(const ENU& other) const {
-            return Point::operator==(other) && datum == other.datum;
-        }
+        inline bool operator==(const ENU &other) const { return Point::operator==(other) && datum == other.datum; }
 
-        inline bool operator!=(const ENU& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const ENU &other) const { return !(*this == other); }
     };
 } // namespace concord

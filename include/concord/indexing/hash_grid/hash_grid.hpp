@@ -1,7 +1,7 @@
 #pragma once
 
 // Spatial hash grid implementation
-#include "../../core/types.hpp"
+#include "../../types/point.hpp"
 #include <unordered_map>
 #include <vector>
 

@@ -205,6 +205,70 @@
       "last_modified": "2025-05-31T03:30:20Z",
       "resolved": "github:NixOS/nixpkgs/59138c7667b7970d205d6a05a8bfa2d78caa3643?lastModified=1748662220&narHash=sha256-7gGa49iB9nCnFk4h%2Fg9zwjlQAyjtpgcFkODjcOQS0Es%3D"
     },
+    "rerun@latest": {
+      "last_modified": "2025-11-23T21:50:36Z",
+      "resolved": "github:NixOS/nixpkgs/ee09932cedcef15aaf476f9343d1dea2cb77e261#rerun",
+      "source": "devbox-search",
+      "version": "0.27.2",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/1pi5mpidizgmn4vxg6k89annqc1j1vvn-rerun-0.27.2",
+              "default": true
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/md0a78pqg3h1xy1z10xl45yka6jhifk0-rerun-0.27.2-dev"
+            }
+          ],
+          "store_path": "/nix/store/1pi5mpidizgmn4vxg6k89annqc1j1vvn-rerun-0.27.2"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/7q9xc22764hpfdsp9c26hy0wk020hl8y-rerun-0.27.2",
+              "default": true
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/yh8qk5pmcybmgpz7f0i0xv76s1gsrv4c-rerun-0.27.2-dev"
+            }
+          ],
+          "store_path": "/nix/store/7q9xc22764hpfdsp9c26hy0wk020hl8y-rerun-0.27.2"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/w1kvwyzppd2j0c1926acqkw5f3pbndp8-rerun-0.27.2",
+              "default": true
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/hvlspfycrpmpal4q9wj1wimxdv6whmmz-rerun-0.27.2-dev"
+            }
+          ],
+          "store_path": "/nix/store/w1kvwyzppd2j0c1926acqkw5f3pbndp8-rerun-0.27.2"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/3l3dbrvc57wwky5pap5r1x6hi7c9cwbn-rerun-0.27.2",
+              "default": true
+            },
+            {
+              "name": "dev",
+              "path": "/nix/store/s9ja103vqkxsqrv2mqkw38ymm4bw0wjn-rerun-0.27.2-dev"
+            }
+          ],
+          "store_path": "/nix/store/3l3dbrvc57wwky5pap5r1x6hi7c9cwbn-rerun-0.27.2"
+        }
+      }
+    },
     "stdenv@latest": {
       "last_modified": "2023-02-24T09:01:09Z",
       "resolved": "github:NixOS/nixpkgs/7d0ed7f2e5aea07ab22ccb338d27fbe347ed2f11#stdenv",

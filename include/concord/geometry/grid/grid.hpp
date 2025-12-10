@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../../core/types.hpp"
+#include "../../types/point.hpp"
+#include "../../types/pose.hpp"
 #include "../polygon/polygon.hpp"
 #include <array>
 #include <cassert>
@@ -161,8 +162,8 @@ namespace concord {
         constexpr double inradius() const noexcept { return inradius_; }
         constexpr bool centered() const noexcept { return centered_; }
         constexpr bool reverse_y() const noexcept { return reverse_y_; }
-        const concord::Pose& pose() const noexcept { return shift_; }
-        const concord::Pose& shift() const noexcept { return shift_; } // Alias for backward compatibility
+        const concord::Pose &pose() const noexcept { return shift_; }
+        const concord::Pose &shift() const noexcept { return shift_; } // Alias for backward compatibility
 
         // Data iterators
         inline auto begin() noexcept { return data_.begin(); }

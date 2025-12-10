@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../core/types.hpp"
 #include "../../geometry/bounding.hpp"
+#include "../../types/point.hpp"
 #include <algorithm>
 #include <functional>
 #include <unordered_map>

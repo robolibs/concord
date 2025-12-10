@@ -35,14 +35,12 @@ namespace concord {
                    std::to_string(northing);
         }
 
-        inline bool operator==(const UTM& other) const {
-            return easting == other.easting && northing == other.northing && 
-                   altitude == other.altitude && zone == other.zone && is_north == other.is_north;
+        inline bool operator==(const UTM &other) const {
+            return easting == other.easting && northing == other.northing && altitude == other.altitude &&
+                   zone == other.zone && is_north == other.is_north;
         }
 
-        inline bool operator!=(const UTM& other) const {
-            return !(*this == other);
-        }
+        inline bool operator!=(const UTM &other) const { return !(*this == other); }
     };
 
 } // namespace concord
