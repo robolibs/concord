@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.4.0] - 2025-12-10
+
+### <!-- 0 -->⛰️  Features
+
+- Add Triangle primitive for concord
+- Implement a unified algorithms header and core spatial algorithms
+
+### <!-- 2 -->🚜 Refactor
+
+- Organize spatial algorithms and geometry types
+- Move `outer_rectangle` definition to source file
+- Move more implementations into source files
+- Move geometry primitive methods to source files
+- Move method definitions to source files
+- Streamline build, dev, and example configurations
+- Move core types to a dedicated `types` directory
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Introduce xmake build system and algorithm header unification
+
+### Build
+
+- Update xmake version to 2.8.2
+- Adopt as alterntive xmake for project build system
+
 ## [2.3.2] - 2025-08-19
 
 ### <!-- 2 -->🚜 Refactor
