@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../types/point.hpp"
+#include "../types/pose.hpp"
 #include <cstddef>
 #include <vector>
 
@@ -9,26 +9,26 @@ namespace concord {
     class Path {
       public:
         Path() = default;
-        explicit Path(const std::vector<Point> &pts);
+        explicit Path(const std::vector<Pose> &poses);
 
-        void addPoint(const Point &p);
+        void add(const Pose &p);
         void clear() noexcept;
 
         std::size_t size() const noexcept;
         bool empty() const noexcept;
 
-        Point &operator[](std::size_t idx);
-        const Point &operator[](std::size_t idx) const;
+        Pose &operator[](std::size_t idx);
+        const Pose &operator[](std::size_t idx) const;
 
-        auto begin() noexcept;
-        auto end() noexcept;
-        auto begin() const noexcept;
-        auto end() const noexcept;
+        std::vector<Pose>::iterator begin() noexcept;
+        std::vector<Pose>::iterator end() noexcept;
+        std::vector<Pose>::const_iterator begin() const noexcept;
+        std::vector<Pose>::const_iterator end() const noexcept;
 
-        const std::vector<Point> &getPoints() const noexcept;
+        const std::vector<Pose> &get() const noexcept;
 
       private:
-        std::vector<Point> points;
+        std::vector<Pose> poses_;
     };
 
 } // namespace concord

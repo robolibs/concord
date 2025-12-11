@@ -7,6 +7,7 @@
 #include "types/pose.hpp"
 #include "types/quaternion.hpp"
 #include "types/size.hpp"
+#include "types/state.hpp"
 
 // Basic geometric primitives and shapes
 #include "geometry/bounding.hpp"
@@ -17,6 +18,7 @@
 #include "geometry/polygon/partitioner.hpp"
 #include "geometry/polygon/polygon.hpp"
 #include "geometry/primitives/primitives.hpp"
+#include "geometry/trajectory.hpp"
 
 // Advanced spatial types
 #include "geographic/coordinate_utils.hpp"
