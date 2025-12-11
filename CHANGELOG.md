@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.0] - 2025-12-11
+
+### <!-- 0 -->⛰️  Features
+
+- Introduce `Trajectory` and `State` to manage robot poses
+
 ## [2.4.0] - 2025-12-10
 
 ### <!-- 0 -->⛰️  Features
