@@ -1,5 +1,5 @@
 set_project("concord")
-set_version("2.3.2")
+set_version("2.5.0")
 set_xmakever("2.7.0")
 
 -- Set C++ standard

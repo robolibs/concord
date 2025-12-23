@@ -2,28 +2,28 @@
 
 namespace concord {
 
-    Path::Path(const std::vector<Point> &pts) : points(pts) {}
+    Path::Path(const std::vector<Pose> &poses) : poses_(poses) {}
 
-    void Path::addPoint(const Point &p) { points.emplace_back(p); }
+    void Path::add(const Pose &p) { poses_.emplace_back(p); }
 
-    void Path::clear() noexcept { points.clear(); }
+    void Path::clear() noexcept { poses_.clear(); }
 
-    std::size_t Path::size() const noexcept { return points.size(); }
+    std::size_t Path::size() const noexcept { return poses_.size(); }
 
-    bool Path::empty() const noexcept { return points.empty(); }
+    bool Path::empty() const noexcept { return poses_.empty(); }
 
-    Point &Path::operator[](std::size_t idx) { return points.at(idx); }
+    Pose &Path::operator[](std::size_t idx) { return poses_.at(idx); }
 
-    const Point &Path::operator[](std::size_t idx) const { return points.at(idx); }
+    const Pose &Path::operator[](std::size_t idx) const { return poses_.at(idx); }
 
-    auto Path::begin() noexcept { return points.begin(); }
+    std::vector<Pose>::iterator Path::begin() noexcept { return poses_.begin(); }
 
-    auto Path::end() noexcept { return points.end(); }
+    std::vector<Pose>::iterator Path::end() noexcept { return poses_.end(); }
 
-    auto Path::begin() const noexcept { return points.begin(); }
+    std::vector<Pose>::const_iterator Path::begin() const noexcept { return poses_.begin(); }
 
-    auto Path::end() const noexcept { return points.end(); }
+    std::vector<Pose>::const_iterator Path::end() const noexcept { return poses_.end(); }
 
-    const std::vector<Point> &Path::getPoints() const noexcept { return points; }
+    const std::vector<Pose> &Path::get() const noexcept { return poses_; }
 
 } // namespace concord
