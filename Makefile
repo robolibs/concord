@@ -1,13 +1,21 @@
 SHELL := /bin/bash
 
-# Detect build system: prefer xmake if available (binary + xmake.lua), fallback to cmake
-HAS_XMAKE := $(shell command -v xmake 2>/dev/null)
-HAS_XMAKE_LUA := $(shell [ -f xmake.lua ] && echo "yes" || echo "")
-ifeq ($(and $(HAS_XMAKE),$(HAS_XMAKE_LUA)),yes)
-    BUILD_SYSTEM := xmake
+# Detect build system: use BUILD_SYSTEM env if set, else prefer xmake if available, fallback to cmake
+ifdef BUILD_SYSTEM
+    # Use the environment-provided BUILD_SYSTEM
+else
+    HAS_XMAKE := $(shell command -v xmake 2>/dev/null)
+    HAS_XMAKE_LUA := $(shell [ -f xmake.lua ] && echo "yes" || echo "")
+    ifeq ($(and $(HAS_XMAKE),$(HAS_XMAKE_LUA)),yes)
+        BUILD_SYSTEM := xmake
+    else
+        BUILD_SYSTEM := cmake
+    endif
+endif
+
+ifeq ($(BUILD_SYSTEM),xmake)
     PROJECT_NAME := $(shell grep 'set_project' xmake.lua | sed 's/set_project("\(.*\)")/\1/')
 else
-    BUILD_SYSTEM := cmake
     PROJECT_NAME := $(shell grep -Po 'set\s*\(\s*project_name\s+\K[^)]+' CMakeLists.txt)
     ifeq ($(PROJECT_NAME),)
         $(error Error: project_name not found in CMakeLists.txt)
