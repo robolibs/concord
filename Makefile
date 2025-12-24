@@ -26,6 +26,7 @@ PROJECT_CAP  := $(shell echo $(PROJECT_NAME) | tr '[:lower:]' '[:upper:]')
 LATEST_TAG   ?= $(shell git describe --tags --abbrev=0 2>/dev/null)
 TOP_DIR      := $(CURDIR)
 BUILD_DIR    := $(TOP_DIR)/build
+FORMAT      ?= 1
 
 $(info ------------------------------------------)
 $(info Project: $(PROJECT_NAME))
@@ -36,8 +37,12 @@ $(info ------------------------------------------)
 
 
 build:
+ifneq ($(FORMAT),0)
 	@echo "Running clang-format on source files..."
-	@find ./src ./include -name "*.cpp" -o -name "*.hpp" -o -name "*.h" | xargs clang-format -i
+	@find ./src ./include -name "*.cpp" -o -name "*.hpp" -o -name "*.h" 2>/dev/null | xargs clang-format -i
+else
+	@echo "Skipping clang-format (FORMAT=0)"
+endif
 ifeq ($(BUILD_SYSTEM),xmake)
 	@xmake 2>&1 | tee >(grep "error:" > "$(TOP_DIR)/.quickfix")
 else
@@ -52,7 +57,7 @@ b: build
 
 config:
 ifeq ($(BUILD_SYSTEM),xmake)
-	@xmake f --examples=y --tests=y -y
+	@xmake f --concord_examples=y --concord_tests=y -y
 	@xmake project -k compile_commands
 else
 	@mkdir -p $(BUILD_DIR)
@@ -64,7 +69,7 @@ endif
 reconfig:
 ifeq ($(BUILD_SYSTEM),xmake)
 	@rm -rf .xmake $(BUILD_DIR)
-	@xmake f --examples=y --tests=y -c -y
+	@xmake f --concord_examples=y --concord_tests=y -c -y
 	@xmake project -k compile_commands
 else
 	@rm -rf $(BUILD_DIR)

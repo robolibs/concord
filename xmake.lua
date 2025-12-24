@@ -49,96 +49,79 @@ if pkg_config then
 end
 
 -- Options
-option("examples")
+option("concord_examples")
     set_default(false)
     set_showmenu(true)
     set_description("Build examples")
 option_end()
 
-option("tests")
+option("concord_tests")
     set_default(false)
     set_showmenu(true)
     set_description("Enable tests")
 option_end()
 
-option("rerun")
-    set_default(false)
-    set_showmenu(true)
-    set_description("Enable rerun_sdk support")
-option_end()
+-- Note: rerun_sdk integration removed from xmake to keep builds sandbox-friendly.
 
--- Define rerun_sdk package (from ~/.local installation)
-package("rerun_sdk")
-    set_kind("library", {headeronly = false})
+-- Tests use doctest headers; prefer a local checkout (no network).
+local doctest_dir = nil
+if has_config("concord_tests") then
+    local candidates = os.dirs(path.join(os.projectdir(), "..", "*", "build", "_deps", "doctest-src"))
+    for _, cand in ipairs(candidates) do
+        if os.isfile(path.join(cand, "doctest", "doctest.h")) then
+            doctest_dir = cand
+            break
+        end
+    end
+end
+
+-- Mandatory datapod dependency (like ../optinum). Prefer local checkout at ../datapod, otherwise fetch from git.
+local dp_dir = path.join(os.projectdir(), "..", "datapod")
+local dp_source_dir = os.isdir(dp_dir) and dp_dir or path.join(os.projectdir(), "build/_deps/datapod-src")
+
+package("datapod")
+    set_sourcedir(dp_source_dir)
 
     on_fetch(function (package)
-        local home = os.getenv("HOME")
-        if not home then
+        local sourcedir = package:sourcedir()
+        if sourcedir == dp_dir then
             return
         end
-
-        local result = {}
-        -- Link in correct order: rerun_sdk -> rerun_c -> arrow
-        result.links = {"rerun_sdk", "rerun_c__linux_x64", "arrow", "arrow_bundled_dependencies"}
-        result.linkdirs = {path.join(home, ".local/lib")}
-        result.includedirs = {path.join(home, ".local/include")}
-
-        -- Check if library exists
-        local libpath = path.join(home, ".local/lib/librerun_sdk.a")
-        if os.isfile(libpath) then
-            return result
+        if not os.isdir(sourcedir) then
+            print("Fetching datapod from git...")
+            os.mkdir(path.directory(sourcedir))
+            os.execv("git", {"clone", "--quiet", "--depth", "1", "--branch", "0.0.6",
+                            "-c", "advice.detachedHead=false",
+                            "https://github.com/robolibs/datapod.git", sourcedir})
         end
     end)
 
     on_install(function (package)
-        -- Already installed in ~/.local, nothing to do
-        local home = os.getenv("HOME")
-        package:addenv("PATH", path.join(home, ".local/bin"))
+        local configs = {}
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:is_debug() and "Debug" or "Release"))
+        import("package.tools.cmake").install(package, configs, {cmake_generator = "Unix Makefiles"})
     end)
 package_end()
 
--- Add required packages conditionally
-if has_config("examples") then
-    add_requires("rerun_sdk")
-elseif has_config("rerun") then
-    add_requires("rerun_sdk")
-end
-
-if has_config("tests") then
-    add_requires("doctest")
-end
+add_requires("datapod")
 
 -- Main library target
 target("concord")
-    set_kind("static")
-
-    -- Add source files
-    add_files("src/concord/**.cpp")
+    set_kind("headeronly")
 
     -- Add header files
     add_headerfiles("include/(concord/**.hpp)")
     add_includedirs("include", {public = true})
 
-    -- Conditional rerun support (only if package is found)
-    if has_config("examples") or has_config("rerun") then
-        on_load(function (target)
-            if target:pkg("rerun_sdk") then
-                target:add("defines", "HAS_RERUN")
-            end
-        end)
-        add_packages("rerun_sdk")
-    end
+    add_packages("datapod", {public = true})
+    add_defines("SHORT_NAMESPACE", {public = true})
 
-    -- Set install files
+    -- Headers-only install
     add_installfiles("include/(concord/**.hpp)")
-    on_install(function (target)
-        local installdir = target:installdir()
-        os.cp(target:targetfile(), path.join(installdir, "lib", path.filename(target:targetfile())))
-    end)
 target_end()
 
 -- Examples (only build when concord is the main project)
-if has_config("examples") and os.projectdir() == os.curdir() then
+if has_config("concord_examples") and os.projectdir() == os.curdir() then
     for _, filepath in ipairs(os.files("examples/*.cpp")) do
         local filename = path.basename(filepath)
         target(filename)
@@ -146,29 +129,25 @@ if has_config("examples") and os.projectdir() == os.curdir() then
             add_files(filepath)
             add_deps("concord")
 
-            -- Always try to add rerun_sdk for examples (matching CMake behavior)
-            on_load(function (target)
-                if target:pkg("rerun_sdk") then
-                    target:add("defines", "HAS_RERUN")
-                end
-            end)
-            add_packages("rerun_sdk")
-
             add_includedirs("include")
         target_end()
     end
 end
 
 -- Tests (only build when concord is the main project)
-if has_config("tests") and os.projectdir() == os.curdir() then
+if has_config("concord_tests") and os.projectdir() == os.curdir() then
     for _, filepath in ipairs(os.files("test/*.cpp")) do
         local filename = path.basename(filepath)
         target(filename)
             set_kind("binary")
             add_files(filepath)
             add_deps("concord")
-            add_packages("doctest")
             add_includedirs("include")
+            if doctest_dir then
+                add_includedirs(doctest_dir)
+            else
+                raise("doctest not found (expected ../*/build/_deps/doctest-src); build any sibling that vendors doctest or set it up locally")
+            end
             add_defines("DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN")
 
             -- Add as test
