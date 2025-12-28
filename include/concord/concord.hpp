@@ -12,6 +12,7 @@
 #include "frame/convert.hpp"
 #include "frame/datum.hpp"
 #include "frame/lie.hpp"
+#include "frame/spline.hpp"
 #include "frame/tags.hpp"
 #include "frame/transform.hpp"
 #include "frame/types.hpp"
