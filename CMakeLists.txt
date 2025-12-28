@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 set(project_name concord)
-project(${project_name} VERSION 2.5.0 LANGUAGES CXX)
+project(${project_name} VERSION 0.0.0 LANGUAGES CXX)
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 cmake_policy(SET CMP0074 NEW)
@@ -27,7 +27,7 @@ set(ext_deps)
 set(lib_deps)
 
 # --------------------------------------------------------------------------------------------------
-# Mandatory datapod dependency (like ../optinum). Prefer local checkout at ../datapod.
+# Mandatory datapod dependency. Prefer local checkout at ../datapod.
 set(CONCORD_DATAPOD_SOURCE_DIR "" CACHE PATH "Path to a local datapod checkout (overrides ../datapod)")
 if(CONCORD_DATAPOD_SOURCE_DIR AND EXISTS "${CONCORD_DATAPOD_SOURCE_DIR}/CMakeLists.txt")
   FetchContent_Declare(datapod SOURCE_DIR "${CONCORD_DATAPOD_SOURCE_DIR}")
@@ -38,6 +38,19 @@ else()
 endif()
 FetchContent_MakeAvailable(datapod)
 list(APPEND lib_deps datapod::datapod)
+
+# --------------------------------------------------------------------------------------------------
+# Mandatory optinum dependency. Prefer local checkout at ../optinum.
+set(CONCORD_OPTINUM_SOURCE_DIR "" CACHE PATH "Path to a local optinum checkout (overrides ../optinum)")
+if(CONCORD_OPTINUM_SOURCE_DIR AND EXISTS "${CONCORD_OPTINUM_SOURCE_DIR}/CMakeLists.txt")
+  FetchContent_Declare(optinum SOURCE_DIR "${CONCORD_OPTINUM_SOURCE_DIR}")
+elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../optinum/CMakeLists.txt")
+  FetchContent_Declare(optinum SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../optinum")
+else()
+  FetchContent_Declare(optinum GIT_REPOSITORY https://github.com/robolibs/optinum.git GIT_TAG 0.0.3)
+endif()
+FetchContent_MakeAvailable(optinum)
+list(APPEND lib_deps optinum::optinum)
 
 
 # --------------------------------------------------------------------------------------------------
