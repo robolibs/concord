@@ -8,7 +8,8 @@
  * Key concepts:
  * - concord::earth::WGS extends dp::Geo (same memory layout)
  * - concord::earth::UTM extends dp::Utm (same memory layout)
- * - concord::frame::ENU/NED use dp::Point and can be constructed from dp::Loc
+ * - concord::frame::ENU/NED extend dp::Loc (local coords + origin)
+ * - concord::frame::FRD/FLU extend dp::Point (body-relative coords)
  */
 
 #include <concord/concord.hpp>
@@ -74,10 +75,10 @@ int main() {
     std::cout << "   From dp::Utm: " << concord_utm << "\n\n";
 
     // =========================================================================
-    // 3. dp::Loc <-> frame::ENU/NED
+    // 3. dp::Loc <-> frame::ENU/NED (NOW EXTENDS dp::Loc!)
     // =========================================================================
     std::cout << "3. dp::Loc <-> frame::ENU/NED\n";
-    std::cout << "   dp::Loc stores local coords + origin, ENU/NED are views\n\n";
+    std::cout << "   ENU/NED now EXTEND dp::Loc - they carry their origin!\n\n";
 
     // Create a dp::Loc (local position with reference origin)
     dp::Loc robot_loc{
@@ -88,35 +89,41 @@ int main() {
               << robot_loc.local.z << ")\n";
     std::cout << "   Origin: lat=" << robot_loc.origin.latitude << ", lon=" << robot_loc.origin.longitude << "\n";
 
-    // Convert to ENU (uses local coords directly)
+    // Convert to ENU - ENU IS-A dp::Loc now!
     frame::ENU robot_enu{robot_loc};
     std::cout << "   As ENU: east=" << robot_enu.east() << ", north=" << robot_enu.north() << ", up=" << robot_enu.up()
               << "\n";
+    std::cout << "   ENU carries origin: lat=" << robot_enu.origin.latitude << "\n";
 
     // Convert to NED (swaps axes: ENU -> NED)
     frame::NED robot_ned{robot_loc};
     std::cout << "   As NED: north=" << robot_ned.north() << ", east=" << robot_ned.east()
-              << ", down=" << robot_ned.down() << "\n\n";
+              << ", down=" << robot_ned.down() << "\n";
+    std::cout << "   NED carries origin: lat=" << robot_ned.origin.latitude << "\n\n";
+
+    // ENU/NED can now convert back to WGS without external reference!
+    earth::WGS back_to_wgs = frame::to_wgs(robot_enu);
+    std::cout << "   ENU -> WGS (self-contained): " << back_to_wgs << "\n\n";
 
     // =========================================================================
-    // 4. dp::Point <-> frame types
+    // 4. dp::Point <-> frame::FRD/FLU (body frames)
     // =========================================================================
-    std::cout << "4. dp::Point <-> frame types\n";
-    std::cout << "   All frame types use dp::Point internally\n\n";
+    std::cout << "4. dp::Point <-> frame::FRD/FLU\n";
+    std::cout << "   Body frames extend dp::Point (no global origin needed)\n\n";
 
     dp::Point sensor_offset{0.5, 0.0, 0.3}; // 50cm forward, 30cm up
 
-    // Create frame types from dp::Point
+    // Create frame types from dp::Point - FLU IS-A dp::Point now!
     frame::FLU sensor_flu{sensor_offset};
     std::cout << "   FLU sensor: forward=" << sensor_flu.forward() << ", left=" << sensor_flu.left()
               << ", up=" << sensor_flu.up() << "\n";
 
-    // Access underlying dp::Point
+    // Access as dp::Point (FLU inherits from dp::Point)
     const dp::Point &pt = sensor_flu.point();
     std::cout << "   As dp::Point: (" << pt.x << ", " << pt.y << ", " << pt.z << ")\n";
 
-    // Use dp::Point methods
-    std::cout << "   Magnitude: " << sensor_flu.p.magnitude() << " m\n\n";
+    // Use dp::Point methods directly on FLU
+    std::cout << "   Magnitude: " << sensor_flu.magnitude() << " m\n\n";
 
     // =========================================================================
     // 5. Conversion pipeline with mixed types
@@ -126,24 +133,20 @@ int main() {
     // Start with dp::Geo
     dp::Geo start_geo{48.8570, 2.3530, 40.0};
 
-    // Use concord's convert builder (accepts dp::Geo via WGS constructor)
-    frame::Datum datum{paris_geo}; // Datum from dp::Geo
-
-    // Convert dp::Geo -> ENU using concord
-    auto enu_result = convert(earth::WGS{start_geo}).withDatum(datum).to<frame::ENU>().build();
+    // Convert dp::Geo -> ENU using concord (ref is just dp::Geo now)
+    auto enu_result = convert(earth::WGS{start_geo}).withRef(paris_geo).to<frame::ENU>().build();
 
     if (enu_result.is_ok()) {
         frame::ENU enu = enu_result.value();
         std::cout << "   dp::Geo -> ENU: " << enu << "\n";
 
-        // Get the underlying dp::Point for further processing
-        dp::Point local_pt = enu.point();
-        std::cout << "   Local dp::Point: (" << local_pt.x << ", " << local_pt.y << ", " << local_pt.z << ")\n";
+        // ENU IS-A dp::Loc, so we can use dp::Loc methods
+        std::cout << "   Distance from origin: " << enu.distance_from_origin() << " m\n";
+        std::cout << "   Same origin check works: " << (enu.same_origin(robot_enu) ? "yes" : "no") << "\n";
 
-        // Create a dp::Loc from the result
-        dp::Loc result_loc{local_pt, datum.geo()};
-        std::cout << "   As dp::Loc: local=(" << result_loc.local.x << ", " << result_loc.local.y << ")\n";
-        std::cout << "   Distance from origin: " << result_loc.distance_from_origin() << " m\n";
+        // Convert back to WGS - no external ref needed!
+        earth::WGS back = frame::to_wgs(enu);
+        std::cout << "   Back to WGS: " << back << "\n";
     }
 
     std::cout << "\n=== Done ===\n";

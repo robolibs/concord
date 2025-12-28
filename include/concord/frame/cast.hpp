@@ -12,20 +12,20 @@ namespace concord::frame {
     }
 
     // ============================================================================
-    // ENU <-> NED conversions
+    // ENU <-> NED conversions (preserves origin)
     // ============================================================================
     template <> inline NED frame_cast<NED, ENU>(const ENU &enu) {
-        // ENU(e,n,u) -> NED(n,e,-u)
-        return NED{enu.north(), enu.east(), -enu.up()};
+        // ENU(e,n,u) -> NED(n,e,-u), preserving origin
+        return NED{enu.north(), enu.east(), -enu.up(), enu.origin};
     }
 
     template <> inline ENU frame_cast<ENU, NED>(const NED &ned) {
-        // NED(n,e,d) -> ENU(e,n,-d)
-        return ENU{ned.east(), ned.north(), -ned.down()};
+        // NED(n,e,d) -> ENU(e,n,-d), preserving origin
+        return ENU{ned.east(), ned.north(), -ned.down(), ned.origin};
     }
 
     // ============================================================================
-    // FRD <-> FLU conversions
+    // FRD <-> FLU conversions (body frames, no origin)
     // ============================================================================
     template <> inline FLU frame_cast<FLU, FRD>(const FRD &frd) {
         // FRD(f,r,d) -> FLU(f,-r,-d)
