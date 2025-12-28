@@ -49,13 +49,13 @@ if pkg_config then
 end
 
 -- Options
-option("concord_examples")
+option("examples")
     set_default(false)
     set_showmenu(true)
     set_description("Build examples")
 option_end()
 
-option("concord_tests")
+option("tests")
     set_default(false)
     set_showmenu(true)
     set_description("Enable tests")
@@ -65,7 +65,7 @@ option_end()
 
 -- Tests use doctest headers; prefer a local checkout (no network).
 local doctest_dir = nil
-if has_config("concord_tests") then
+if has_config("tests") then
     local candidates = os.dirs(path.join(os.projectdir(), "..", "*", "build", "_deps", "doctest-src"))
     for _, cand in ipairs(candidates) do
         if os.isfile(path.join(cand, "doctest", "doctest.h")) then
@@ -121,7 +121,7 @@ target("concord")
 target_end()
 
 -- Examples (only build when concord is the main project)
-if has_config("concord_examples") and os.projectdir() == os.curdir() then
+if has_config("examples") and os.projectdir() == os.curdir() then
     for _, filepath in ipairs(os.files("examples/*.cpp")) do
         local filename = path.basename(filepath)
         target(filename)
@@ -135,7 +135,7 @@ if has_config("concord_examples") and os.projectdir() == os.curdir() then
 end
 
 -- Tests (only build when concord is the main project)
-if has_config("concord_tests") and os.projectdir() == os.curdir() then
+if has_config("tests") and os.projectdir() == os.curdir() then
     for _, filepath in ipairs(os.files("test/*.cpp")) do
         local filename = path.basename(filepath)
         target(filename)
