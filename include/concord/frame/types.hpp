@@ -10,6 +10,9 @@ namespace concord::frame {
 
     // ============================================================================
     // ENU - East-North-Up local tangent frame
+    //
+    // Uses dp::Point for local coordinates storage.
+    // Can be constructed from dp::Loc (extracts local point, ignores origin).
     // ============================================================================
     struct ENU {
         static constexpr const char *name = "enu";
@@ -21,6 +24,9 @@ namespace concord::frame {
         ENU() = default;
         explicit ENU(const dp::Point &pt) : p(pt) {}
         ENU(double east, double north, double up) : p{east, north, up} {}
+
+        // Construct from dp::Loc (uses local coordinates, ENU convention)
+        explicit ENU(const dp::Loc &loc) : p(loc.local) {}
 
         // Semantic accessors
         double &east() { return p.x; }
@@ -40,6 +46,10 @@ namespace concord::frame {
 
         bool is_set() const noexcept { return p.is_set(); }
 
+        // Access underlying point
+        const dp::Point &point() const { return p; }
+        dp::Point &point() { return p; }
+
         auto members() noexcept { return std::tie(p); }
         auto members() const noexcept { return std::tie(p); }
     };
@@ -55,6 +65,9 @@ namespace concord::frame {
 
     // ============================================================================
     // NED - North-East-Down local tangent frame
+    //
+    // Uses dp::Point for local coordinates storage.
+    // Can be constructed from dp::Loc (converts ENU to NED convention).
     // ============================================================================
     struct NED {
         static constexpr const char *name = "ned";
@@ -65,6 +78,9 @@ namespace concord::frame {
         NED() = default;
         explicit NED(const dp::Point &pt) : p(pt) {}
         NED(double north, double east, double down) : p{north, east, down} {}
+
+        // Construct from dp::Loc (converts from ENU to NED: swap x/y, negate z)
+        explicit NED(const dp::Loc &loc) : p{loc.local.y, loc.local.x, -loc.local.z} {}
 
         // Semantic accessors
         double &north() { return p.x; }
@@ -83,6 +99,10 @@ namespace concord::frame {
 
         bool is_set() const noexcept { return p.is_set(); }
 
+        // Access underlying point
+        const dp::Point &point() const { return p; }
+        dp::Point &point() { return p; }
+
         auto members() noexcept { return std::tie(p); }
         auto members() const noexcept { return std::tie(p); }
     };
@@ -98,6 +118,8 @@ namespace concord::frame {
 
     // ============================================================================
     // FRD - Forward-Right-Down body frame (aerospace convention)
+    //
+    // Uses dp::Point for body-relative coordinates storage.
     // ============================================================================
     struct FRD {
         static constexpr const char *name = "frd";
@@ -126,6 +148,10 @@ namespace concord::frame {
 
         bool is_set() const noexcept { return p.is_set(); }
 
+        // Access underlying point
+        const dp::Point &point() const { return p; }
+        dp::Point &point() { return p; }
+
         auto members() noexcept { return std::tie(p); }
         auto members() const noexcept { return std::tie(p); }
     };
@@ -141,6 +167,8 @@ namespace concord::frame {
 
     // ============================================================================
     // FLU - Forward-Left-Up body frame (ROS convention)
+    //
+    // Uses dp::Point for body-relative coordinates storage.
     // ============================================================================
     struct FLU {
         static constexpr const char *name = "flu";
@@ -168,6 +196,10 @@ namespace concord::frame {
         double z() const { return p.z; }
 
         bool is_set() const noexcept { return p.is_set(); }
+
+        // Access underlying point
+        const dp::Point &point() const { return p; }
+        dp::Point &point() { return p; }
 
         auto members() noexcept { return std::tie(p); }
         auto members() const noexcept { return std::tie(p); }

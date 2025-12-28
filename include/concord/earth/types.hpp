@@ -12,48 +12,54 @@ namespace concord::earth {
     enum class AngleUnit { Deg, Rad };
 
     // ============================================================================
-    // WGS - WGS84 geodetic coordinates
+    // WGS - WGS84 geodetic coordinates (extends dp::Geo)
+    //
+    // Inherits from dp::Geo for data storage, adds concord-specific methods:
+    // - Unit conversion (degrees/radians)
+    // - Factory from radians
+    // - Compatibility with concord conversion functions
+    //
+    // Data fields (inherited from dp::Geo):
+    // - latitude: degrees, positive = north
+    // - longitude: degrees, positive = east
+    // - altitude: meters above WGS84 ellipsoid
     // ============================================================================
-    struct WGS {
-        double lat_deg = 0.0;
-        double lon_deg = 0.0;
-        double alt_m = 0.0;
+    struct WGS : dp::Geo {
+        // Inherit constructors from dp::Geo
+        using dp::Geo::Geo;
 
-        // Constructors
+        // Default constructor
         WGS() = default;
-        WGS(double lat, double lon, double alt = 0.0) : lat_deg(lat), lon_deg(lon), alt_m(alt) {}
+
+        // Constructor matching old API (lat, lon, alt in degrees)
+        WGS(double lat_deg, double lon_deg, double alt_m = 0.0) : dp::Geo{lat_deg, lon_deg, alt_m} {}
+
+        // Construct from dp::Geo
+        WGS(const dp::Geo &geo) : dp::Geo{geo.latitude, geo.longitude, geo.altitude} {}
 
         // Factory from radians
-        static WGS from_radians(double lat_rad, double lon_rad, double alt = 0.0) {
-            return WGS{lat_rad * wgs84::rad_to_deg, lon_rad * wgs84::rad_to_deg, alt};
+        static WGS from_radians(double lat_rad, double lon_rad, double alt_m = 0.0) {
+            return WGS{lat_rad * wgs84::rad_to_deg, lon_rad * wgs84::rad_to_deg, alt_m};
         }
 
-        // Accessors with unit conversion
-        double latitude(AngleUnit unit = AngleUnit::Deg) const {
-            return (unit == AngleUnit::Rad) ? lat_deg * wgs84::deg_to_rad : lat_deg;
-        }
-        double longitude(AngleUnit unit = AngleUnit::Deg) const {
-            return (unit == AngleUnit::Rad) ? lon_deg * wgs84::deg_to_rad : lon_deg;
-        }
-        double altitude() const { return alt_m; }
+        // Accessors with unit conversion (concord-specific)
+        double lat_rad() const { return latitude * wgs84::deg_to_rad; }
+        double lon_rad() const { return longitude * wgs84::deg_to_rad; }
 
-        // Mutable accessors (always degrees)
-        double &latitude() { return lat_deg; }
-        double &longitude() { return lon_deg; }
-        double &altitude() { return alt_m; }
-
-        bool is_set() const noexcept { return lat_deg != 0.0 || lon_deg != 0.0 || alt_m != 0.0; }
-
-        auto members() noexcept { return std::tie(lat_deg, lon_deg, alt_m); }
-        auto members() const noexcept { return std::tie(lat_deg, lon_deg, alt_m); }
+        // Convert to dp::Geo (implicit via inheritance, but explicit method for clarity)
+        const dp::Geo &geo() const { return *this; }
+        dp::Geo &geo() { return *this; }
     };
 
     inline std::ostream &operator<<(std::ostream &os, const WGS &w) {
-        return os << "WGS{lat=" << w.lat_deg << "deg, lon=" << w.lon_deg << "deg, alt=" << w.alt_m << "m}";
+        return os << "WGS{lat=" << w.latitude << "deg, lon=" << w.longitude << "deg, alt=" << w.altitude << "m}";
     }
 
     // ============================================================================
     // ECF - Earth-Centered Fixed (ECEF) coordinates
+    //
+    // Uses dp::Point for storage. ECEF doesn't have a direct dp:: equivalent,
+    // so we wrap dp::Point with semantic accessors.
     // ============================================================================
     struct ECF {
         dp::Point p{}; // x,y,z in meters
@@ -74,6 +80,10 @@ namespace concord::earth {
 
         auto members() noexcept { return std::tie(p); }
         auto members() const noexcept { return std::tie(p); }
+
+        // Access underlying point
+        const dp::Point &point() const { return p; }
+        dp::Point &point() { return p; }
     };
 
     inline std::ostream &operator<<(std::ostream &os, const ECF &e) {
@@ -81,36 +91,42 @@ namespace concord::earth {
     }
 
     // ============================================================================
-    // UTM - Universal Transverse Mercator coordinates
+    // UTM - Universal Transverse Mercator coordinates (extends dp::Utm)
+    //
+    // Inherits from dp::Utm for data storage, adds concord-specific methods.
+    //
+    // Data fields (inherited from dp::Utm):
+    // - zone: UTM zone number [1-60]
+    // - band: UTM latitude band letter [C-X]
+    // - easting: meters from zone central meridian
+    // - northing: meters from equator
+    // - altitude: meters above WGS84 ellipsoid
     // ============================================================================
-    struct UTM {
-        double easting_m = 0.0;
-        double northing_m = 0.0;
-        double alt_m = 0.0;
-        int zone = 0;
-        bool north = true;
+    struct UTM : dp::Utm {
+        // Inherit constructors from dp::Utm
+        using dp::Utm::Utm;
 
+        // Default constructor
         UTM() = default;
-        UTM(double easting, double northing, double alt, int z, bool n)
-            : easting_m(easting), northing_m(northing), alt_m(alt), zone(z), north(n) {}
 
-        // Accessors
-        double &easting() { return easting_m; }
-        double &northing() { return northing_m; }
-        double &altitude() { return alt_m; }
-        double easting() const { return easting_m; }
-        double northing() const { return northing_m; }
-        double altitude() const { return alt_m; }
+        // Constructor matching old API (easting, northing, alt, zone, north)
+        UTM(double easting_val, double northing_val, double alt, int z, bool n)
+            : dp::Utm{z, n ? 'N' : 'S', easting_val, northing_val, alt} {}
 
-        bool is_set() const noexcept { return easting_m != 0.0 || northing_m != 0.0; }
+        // Construct from dp::Utm
+        UTM(const dp::Utm &u) : dp::Utm{u.zone, u.band, u.easting, u.northing, u.altitude} {}
 
-        auto members() noexcept { return std::tie(easting_m, northing_m, alt_m, zone, north); }
-        auto members() const noexcept { return std::tie(easting_m, northing_m, alt_m, zone, north); }
+        // North/south hemisphere check
+        bool is_north() const { return is_northern(); }
+
+        // Convert to dp::Utm
+        const dp::Utm &utm() const { return *this; }
+        dp::Utm &utm() { return *this; }
     };
 
     inline std::ostream &operator<<(std::ostream &os, const UTM &u) {
-        return os << "UTM{zone=" << u.zone << (u.north ? "N" : "S") << ", e=" << u.easting_m << "m, n=" << u.northing_m
-                  << "m, alt=" << u.alt_m << "m}";
+        return os << "UTM{zone=" << u.zone << u.band << ", e=" << u.easting << "m, n=" << u.northing
+                  << "m, alt=" << u.altitude << "m}";
     }
 
 } // namespace concord::earth

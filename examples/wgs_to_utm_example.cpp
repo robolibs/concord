@@ -13,8 +13,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "UTM zone " << utm.value().zone << (utm.value().north ? "N" : "S") << ": " << utm.value().easting_m
-              << ", " << utm.value().northing_m << "\n";
+    std::cout << "UTM zone " << utm.value().zone << utm.value().band << ": " << utm.value().easting << ", "
+              << utm.value().northing << "\n";
     return 0;
 }
-

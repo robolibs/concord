@@ -20,16 +20,16 @@ namespace concord::frame {
 
         const dp::Point d{p_ecf.p.x - o_ecf.p.x, p_ecf.p.y - o_ecf.p.y, p_ecf.p.z - o_ecf.p.z};
 
-        const double lat_rad = datum.origin.lat_deg * earth::wgs84::deg_to_rad;
-        const double lon_rad = datum.origin.lon_deg * earth::wgs84::deg_to_rad;
+        const double lat_rad = datum.origin.lat_rad();
+        const double lon_rad = datum.origin.lon_rad();
         const auto R = earth::R_enu_from_ecf(lat_rad, lon_rad);
 
         return ENU{earth::mat_mul(R, d)};
     }
 
     inline earth::WGS to_wgs(const Datum &datum, const ENU &enu) {
-        const double lat_rad = datum.origin.lat_deg * earth::wgs84::deg_to_rad;
-        const double lon_rad = datum.origin.lon_deg * earth::wgs84::deg_to_rad;
+        const double lat_rad = datum.origin.lat_rad();
+        const double lon_rad = datum.origin.lon_rad();
 
         const auto R = earth::R_enu_from_ecf(lat_rad, lon_rad);
         const auto Rt = earth::transpose(R);

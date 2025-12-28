@@ -11,9 +11,9 @@ TEST_CASE("WGS -> ECF -> WGS round-trip") {
     const auto ecf = earth::to_ecf(original);
     const auto back = earth::to_wgs(ecf);
 
-    CHECK(std::abs(back.lat_deg - original.lat_deg) < 1e-9);
-    CHECK(std::abs(back.lon_deg - original.lon_deg) < 1e-9);
-    CHECK(std::abs(back.alt_m - original.alt_m) < 1e-5);
+    CHECK(std::abs(back.latitude - original.latitude) < 1e-9);
+    CHECK(std::abs(back.longitude - original.longitude) < 1e-9);
+    CHECK(std::abs(back.altitude - original.altitude) < 1e-5);
 }
 
 TEST_CASE("ECF known values") {

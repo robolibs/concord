@@ -17,7 +17,7 @@ TEST_CASE("convert() builder chaining") {
     const auto roundtrip = convert(wgs).withDatum(datum).to<frame::ENU>().to<earth::WGS>().build();
     REQUIRE(roundtrip.is_ok());
 
-    CHECK(roundtrip.value().lat_deg == doctest::Approx(wgs.lat_deg).epsilon(1e-12));
-    CHECK(roundtrip.value().lon_deg == doctest::Approx(wgs.lon_deg).epsilon(1e-12));
-    CHECK(roundtrip.value().alt_m == doctest::Approx(wgs.alt_m).epsilon(1e-5));
+    CHECK(roundtrip.value().latitude == doctest::Approx(wgs.latitude).epsilon(1e-12));
+    CHECK(roundtrip.value().longitude == doctest::Approx(wgs.longitude).epsilon(1e-12));
+    CHECK(roundtrip.value().altitude == doctest::Approx(wgs.altitude).epsilon(1e-5));
 }

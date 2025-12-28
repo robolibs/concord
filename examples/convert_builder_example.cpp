@@ -22,9 +22,8 @@ int main() {
         return 1;
     }
 
-    std::cout << "Back to WGS: " << back.value().lat_deg << ", " << back.value().lon_deg << ", " << back.value().alt_m
-              << "\n";
+    std::cout << "Back to WGS: " << back.value().latitude << ", " << back.value().longitude << ", "
+              << back.value().altitude << "\n";
 
     return 0;
 }
-

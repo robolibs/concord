@@ -6,9 +6,14 @@
 
 namespace concord::earth {
 
+    /**
+     * @brief Convert WGS84 geodetic coordinates to ECEF (Earth-Centered Earth-Fixed)
+     * @param wgs WGS84 coordinates (latitude, longitude in degrees, altitude in meters)
+     * @return ECF coordinates (x, y, z in meters)
+     */
     inline ECF to_ecf(const WGS &wgs) {
-        const double lat_rad = wgs.lat_deg * wgs84::deg_to_rad;
-        const double lon_rad = wgs.lon_deg * wgs84::deg_to_rad;
+        const double lat_rad = wgs.latitude * wgs84::deg_to_rad;
+        const double lon_rad = wgs.longitude * wgs84::deg_to_rad;
 
         const double sin_lat = std::sin(lat_rad);
         const double cos_lat = std::cos(lat_rad);
@@ -16,10 +21,21 @@ namespace concord::earth {
         const double cos_lon = std::cos(lon_rad);
 
         const double N = wgs84::N(sin_lat);
-        return ECF{dp::Point{(N + wgs.alt_m) * cos_lat * cos_lon, (N + wgs.alt_m) * cos_lat * sin_lon,
-                             (N * (1.0 - wgs84::e2) + wgs.alt_m) * sin_lat}};
+        const double alt = wgs.altitude;
+        return ECF{dp::Point{(N + alt) * cos_lat * cos_lon, (N + alt) * cos_lat * sin_lon,
+                             (N * (1.0 - wgs84::e2) + alt) * sin_lat}};
     }
 
+    /**
+     * @brief Convert WGS84 geodetic coordinates to ECEF (overload for dp::Geo)
+     */
+    inline ECF to_ecf(const dp::Geo &geo) { return to_ecf(WGS{geo}); }
+
+    /**
+     * @brief Convert ECEF coordinates to WGS84 geodetic coordinates
+     * @param ecf ECEF coordinates (x, y, z in meters)
+     * @return WGS84 coordinates (latitude, longitude in degrees, altitude in meters)
+     */
     inline WGS to_wgs(const ECF &ecf) {
         const double x = ecf.p.x;
         const double y = ecf.p.y;

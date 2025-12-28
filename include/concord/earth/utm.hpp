@@ -8,24 +8,35 @@
 
 namespace concord::earth {
 
+    /**
+     * @brief Calculate UTM zone from longitude
+     */
     inline int utm_zone(double lon_deg) { return static_cast<int>(std::floor((lon_deg + 180.0) / 6.0)) + 1; }
 
+    /**
+     * @brief Check if latitude is in northern hemisphere
+     */
     inline bool is_north(double lat_deg) { return lat_deg >= 0.0; }
 
+    /**
+     * @brief Convert WGS84 geodetic coordinates to UTM
+     * @param wgs WGS84 coordinates
+     * @return Result containing UTM coordinates or error if out of bounds
+     */
     inline dp::Result<UTM> to_utm(const WGS &wgs) {
-        if (wgs.lat_deg < -80.0 || wgs.lat_deg > 84.0) {
+        if (wgs.latitude < -80.0 || wgs.latitude > 84.0) {
             return dp::Result<UTM>::err(dp::Error::out_of_range("Latitude out of UTM bounds (-80 to 84 deg)"));
         }
 
-        const double lat_rad = wgs.lat_deg * wgs84::deg_to_rad;
-        const double lon_rad = wgs.lon_deg * wgs84::deg_to_rad;
+        const double lat_rad = wgs.latitude * wgs84::deg_to_rad;
+        const double lon_rad = wgs.longitude * wgs84::deg_to_rad;
 
-        const int zone = utm_zone(wgs.lon_deg);
-        if (zone < 1 || zone > 60) {
+        const int zone_num = utm_zone(wgs.longitude);
+        if (zone_num < 1 || zone_num > 60) {
             return dp::Result<UTM>::err(dp::Error::out_of_range("UTM zone out of range [1,60]"));
         }
 
-        const double lon0 = ((zone - 1) * 6 - 180 + 3) * wgs84::deg_to_rad;
+        const double lon0 = ((zone_num - 1) * 6 - 180 + 3) * wgs84::deg_to_rad;
 
         const double sin_lat = std::sin(lat_rad);
         const double cos_lat = std::cos(lat_rad);
@@ -47,35 +58,45 @@ namespace concord::earth {
         const double A4 = A2 * A2;
         const double A6 = A4 * A2;
 
-        double easting = wgs84::k0 * N *
-                             (A + (1.0 - T + C) * A2 * A / 6.0 +
-                              (5.0 - 18.0 * T + T * T + 72.0 * C - 58.0 * wgs84::ep2) * A4 * A / 120.0) +
-                         500000.0;
+        double easting_val = wgs84::k0 * N *
+                                 (A + (1.0 - T + C) * A2 * A / 6.0 +
+                                  (5.0 - 18.0 * T + T * T + 72.0 * C - 58.0 * wgs84::ep2) * A4 * A / 120.0) +
+                             500000.0;
 
-        double northing =
+        double northing_val =
             wgs84::k0 * (M + N * tan_lat *
                                  (A2 / 2.0 + (5.0 - T + 9.0 * C + 4.0 * C * C) * A4 / 24.0 +
                                   (61.0 - 58.0 * T + T * T + 600.0 * C - 330.0 * wgs84::ep2) * A6 / 720.0));
 
-        if (wgs.lat_deg < 0.0) {
-            northing += 10000000.0;
+        if (wgs.latitude < 0.0) {
+            northing_val += 10000000.0;
         }
 
-        return dp::Result<UTM>::ok(UTM{easting, northing, wgs.alt_m, zone, is_north(wgs.lat_deg)});
+        return dp::Result<UTM>::ok(UTM{easting_val, northing_val, wgs.altitude, zone_num, is_north(wgs.latitude)});
     }
 
+    /**
+     * @brief Convert WGS84 geodetic coordinates to UTM (overload for dp::Geo)
+     */
+    inline dp::Result<UTM> to_utm(const dp::Geo &geo) { return to_utm(WGS{geo}); }
+
+    /**
+     * @brief Convert UTM coordinates to WGS84 geodetic coordinates
+     * @param utm UTM coordinates
+     * @return Result containing WGS84 coordinates or error if invalid zone
+     */
     inline dp::Result<WGS> to_wgs(const UTM &utm) {
         if (utm.zone < 1 || utm.zone > 60) {
             return dp::Result<WGS>::err(dp::Error::out_of_range("UTM zone out of range [1,60]"));
         }
 
-        double northing = utm.northing_m;
-        if (!utm.north) {
-            northing -= 10000000.0;
+        double northing_val = utm.northing;
+        if (!utm.is_north()) {
+            northing_val -= 10000000.0;
         }
 
         const double lon0 = ((utm.zone - 1) * 6 - 180 + 3) * wgs84::deg_to_rad;
-        const double M = northing / wgs84::k0;
+        const double M = northing_val / wgs84::k0;
         const double mu = M / (wgs84::a_m * (1.0 - wgs84::e2 / 4.0 - 3.0 * wgs84::e4 / 64.0 - 5.0 * wgs84::e6 / 256.0));
 
         const double e1 = (1.0 - std::sqrt(1.0 - wgs84::e2)) / (1.0 + std::sqrt(1.0 - wgs84::e2));
@@ -95,7 +116,7 @@ namespace concord::earth {
         const double T1 = tan_phi1 * tan_phi1;
         const double C1 = wgs84::ep2 * cos_phi1 * cos_phi1;
         const double R1 = wgs84::a_m * (1.0 - wgs84::e2) / std::pow(1.0 - wgs84::e2 * sin_phi1 * sin_phi1, 1.5);
-        const double D = (utm.easting_m - 500000.0) / (N1 * wgs84::k0);
+        const double D = (utm.easting - 500000.0) / (N1 * wgs84::k0);
 
         const double D2 = D * D;
         const double D4 = D2 * D2;
@@ -112,7 +133,12 @@ namespace concord::earth {
                     (5.0 - 2.0 * C1 + 28.0 * T1 - 3.0 * C1 * C1 + 8.0 * wgs84::ep2 + 24.0 * T1 * T1) * D4 * D / 120.0) /
                        cos_phi1;
 
-        return dp::Result<WGS>::ok(WGS{lat * wgs84::rad_to_deg, lon * wgs84::rad_to_deg, utm.alt_m});
+        return dp::Result<WGS>::ok(WGS{lat * wgs84::rad_to_deg, lon * wgs84::rad_to_deg, utm.altitude});
     }
+
+    /**
+     * @brief Convert UTM coordinates to WGS84 (overload for dp::Utm)
+     */
+    inline dp::Result<WGS> to_wgs(const dp::Utm &utm) { return to_wgs(UTM{utm}); }
 
 } // namespace concord::earth
