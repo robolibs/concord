@@ -34,7 +34,7 @@ if(CONCORD_DATAPOD_SOURCE_DIR AND EXISTS "${CONCORD_DATAPOD_SOURCE_DIR}/CMakeLis
 elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../datapod/CMakeLists.txt")
   FetchContent_Declare(datapod SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../datapod")
 else()
-  FetchContent_Declare(datapod GIT_REPOSITORY https://github.com/robolibs/datapod.git GIT_TAG 0.0.6)
+  FetchContent_Declare(datapod GIT_REPOSITORY https://github.com/robolibs/datapod.git GIT_TAG 0.0.13)
 endif()
 FetchContent_MakeAvailable(datapod)
 list(APPEND lib_deps datapod::datapod)
