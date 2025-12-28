@@ -22,8 +22,9 @@ namespace concord::earth {
 
         const double N = wgs84::N(sin_lat);
         const double alt = wgs.altitude;
-        return ECF{dp::Point{(N + alt) * cos_lat * cos_lon, (N + alt) * cos_lat * sin_lon,
-                             (N * (1.0 - wgs84::e2) + alt) * sin_lat}};
+        // ECF extends dp::Point, so we can construct directly with x,y,z
+        return ECF{(N + alt) * cos_lat * cos_lon, (N + alt) * cos_lat * sin_lon,
+                   (N * (1.0 - wgs84::e2) + alt) * sin_lat};
     }
 
     /**
@@ -37,9 +38,10 @@ namespace concord::earth {
      * @return WGS84 coordinates (latitude, longitude in degrees, altitude in meters)
      */
     inline WGS to_wgs(const ECF &ecf) {
-        const double x = ecf.p.x;
-        const double y = ecf.p.y;
-        const double z = ecf.p.z;
+        // ECF extends dp::Point, so x/y/z are direct members
+        const double x = ecf.x;
+        const double y = ecf.y;
+        const double z = ecf.z;
 
         const double lon = std::atan2(y, x);
         const double p = std::sqrt(x * x + y * y);

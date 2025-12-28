@@ -31,7 +31,8 @@ namespace concord::frame {
         const earth::ECF p_ecf = earth::to_ecf(wgs);
         const earth::ECF o_ecf = earth::to_ecf(origin);
 
-        const dp::Point d{p_ecf.p.x - o_ecf.p.x, p_ecf.p.y - o_ecf.p.y, p_ecf.p.z - o_ecf.p.z};
+        // ECF extends dp::Point, so x/y/z are direct members
+        const dp::Point d{p_ecf.x - o_ecf.x, p_ecf.y - o_ecf.y, p_ecf.z - o_ecf.z};
 
         const double lat_rad = origin.lat_rad();
         const double lon_rad = origin.lon_rad();
@@ -57,7 +58,8 @@ namespace concord::frame {
         const dp::Point d = earth::mat_mul(Rt, enu.local);
 
         const earth::ECF o_ecf = earth::to_ecf(origin);
-        const earth::ECF p_ecf{dp::Point{o_ecf.p.x + d.x, o_ecf.p.y + d.y, o_ecf.p.z + d.z}};
+        // ECF extends dp::Point, so x/y/z are direct members
+        const earth::ECF p_ecf{o_ecf.x + d.x, o_ecf.y + d.y, o_ecf.z + d.z};
         return earth::to_wgs(p_ecf);
     }
 

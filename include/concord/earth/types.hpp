@@ -2,7 +2,6 @@
 
 #include <datapod/datapod.hpp>
 #include <ostream>
-#include <tuple>
 
 #include "wgs84.hpp"
 
@@ -58,36 +57,26 @@ namespace concord::earth {
     // ============================================================================
     // ECF - Earth-Centered Fixed (ECEF) coordinates
     //
-    // Uses dp::Point for storage. ECEF doesn't have a direct dp:: equivalent,
-    // so we wrap dp::Point with semantic accessors.
+    // Extends dp::Point for storage. ECEF is a Cartesian coordinate system
+    // with origin at Earth's center of mass.
+    //
+    // Convention: x = towards prime meridian, y = towards 90°E, z = towards north pole
     // ============================================================================
-    struct ECF {
-        dp::Point p{}; // x,y,z in meters
+    struct ECF : dp::Point {
+        // Inherit constructors from dp::Point
+        using dp::Point::Point;
 
         ECF() = default;
-        explicit ECF(const dp::Point &pt) : p(pt) {}
-        ECF(double x, double y, double z) : p{x, y, z} {}
+        ECF(const dp::Point &pt) : dp::Point{pt} {}
+        ECF(double x_val, double y_val, double z_val) : dp::Point{x_val, y_val, z_val} {}
 
-        // Accessors
-        double &x() { return p.x; }
-        double &y() { return p.y; }
-        double &z() { return p.z; }
-        double x() const { return p.x; }
-        double y() const { return p.y; }
-        double z() const { return p.z; }
-
-        bool is_set() const noexcept { return p.is_set(); }
-
-        auto members() noexcept { return std::tie(p); }
-        auto members() const noexcept { return std::tie(p); }
-
-        // Access underlying point
-        const dp::Point &point() const { return p; }
-        dp::Point &point() { return p; }
+        // Access as dp::Point (for compatibility)
+        const dp::Point &point() const { return *this; }
+        dp::Point &point() { return *this; }
     };
 
     inline std::ostream &operator<<(std::ostream &os, const ECF &e) {
-        return os << "ECF{x=" << e.p.x << "m, y=" << e.p.y << "m, z=" << e.p.z << "m}";
+        return os << "ECF{x=" << e.x << "m, y=" << e.y << "m, z=" << e.z << "m}";
     }
 
     // ============================================================================
