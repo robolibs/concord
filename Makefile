@@ -26,7 +26,6 @@ PROJECT_CAP  := $(shell echo $(PROJECT_NAME) | tr '[:lower:]' '[:upper:]')
 LATEST_TAG   ?= $(shell git describe --tags --abbrev=0 2>/dev/null)
 TOP_DIR      := $(CURDIR)
 BUILD_DIR    := $(TOP_DIR)/build
-FORMAT      ?= 1
 
 $(info ------------------------------------------)
 $(info Project: $(PROJECT_NAME))
@@ -37,45 +36,43 @@ $(info ------------------------------------------)
 
 
 build:
-ifneq ($(FORMAT),0)
 	@echo "Running clang-format on source files..."
-	@find ./src ./include -name "*.cpp" -o -name "*.hpp" -o -name "*.h" 2>/dev/null | xargs clang-format -i
-else
-	@echo "Skipping clang-format (FORMAT=0)"
-endif
+	@find ./src ./include -name "*.cpp" -o -name "*.hpp" -o -name "*.h" | xargs clang-format -i
 ifeq ($(BUILD_SYSTEM),xmake)
-	@xmake 2>&1 | tee >(grep "error:" > "$(TOP_DIR)/.quickfix")
+	@xmake -j$(shell nproc) -y 2>&1 | tee "$(TOP_DIR)/.complog"
+	@grep "error:" "$(TOP_DIR)/.complog" > "$(TOP_DIR)/.quickfix" || true
 else
 	@if [ ! -d "$(BUILD_DIR)" ]; then \
 		echo "Build directory doesn't exist, running config first..."; \
 		$(MAKE) config; \
 	fi
-	@cd $(BUILD_DIR) && set -o pipefail && make -j$(shell nproc) 2>&1 | tee >(grep "^$(TOP_DIR)" | grep -E "error:" > "$(TOP_DIR)/.quickfix")
+	@cd $(BUILD_DIR) && set -o pipefail && make -j$(shell nproc) 2>&1 | tee "$(TOP_DIR)/.complog"
+	@grep "^$(TOP_DIR)" "$(TOP_DIR)/.complog" | grep -E "error:" > "$(TOP_DIR)/.quickfix" || true
 endif
 
 b: build
 
 config:
 ifeq ($(BUILD_SYSTEM),xmake)
-	@xmake f --concord_examples=y --concord_tests=y -y
+	@xmake f --examples=y --tests=y -y 2>&1 | tee "$(TOP_DIR)/.complog"
 	@xmake project -k compile_commands
 else
 	@mkdir -p $(BUILD_DIR)
 	@cd $(BUILD_DIR) && if [ -f Makefile ]; then make clean; fi
 	@echo "cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON .."
-	@cd $(BUILD_DIR) && cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON ..
+	@cd $(BUILD_DIR) && cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON .. 2>&1 | tee "$(TOP_DIR)/.complog"
 endif
 
 reconfig:
 ifeq ($(BUILD_SYSTEM),xmake)
 	@rm -rf .xmake $(BUILD_DIR)
-	@xmake f --concord_examples=y --concord_tests=y -c -y
+	@xmake f --examples=y --tests=y -c -y 2>&1 | tee "$(TOP_DIR)/.complog"
 	@xmake project -k compile_commands
 else
 	@rm -rf $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR)
 	@echo "cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON .."
-	@cd $(BUILD_DIR) && cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON ..
+	@cd $(BUILD_DIR) && cmake -Wno-dev -D$(PROJECT_CAP)_BUILD_EXAMPLES=ON -D$(PROJECT_CAP)_ENABLE_TESTS=ON .. 2>&1 | tee "$(TOP_DIR)/.complog"
 endif
 
 c: config
@@ -85,11 +82,21 @@ run:
 
 r: run
 
+TEST ?=
+
 test:
 ifeq ($(BUILD_SYSTEM),xmake)
-	@xmake test
+	@if [ -n "$(TEST)" ]; then \
+		./build/linux/$$(uname -m)/release/$(TEST); \
+	else \
+		xmake test; \
+	fi
 else
-	@cd $(BUILD_DIR) && ctest --verbose --output-on-failure || true
+	@if [ -n "$(TEST)" ]; then \
+		$(BUILD_DIR)/$(TEST); \
+	else \
+		cd $(BUILD_DIR) && ctest --verbose --output-on-failure; \
+	fi
 endif
 
 t: test
@@ -103,7 +110,7 @@ help:
 	@echo "  config       Configure and generate build files (preserves cache)"
 	@echo "  reconfig     Full reconfigure (cleans everything including cache)"
 	@echo "  run          Run the main executable"
-	@echo "  test         Run tests"
+	@echo "  test         Run tests (TEST=<name> to run specific test)"
 	@echo "  docs         Build documentation (TYPE=mdbook|doxygen)"
 	@echo "  release      Create a new release (TYPE=patch|minor|major)"
 	@echo
@@ -130,6 +137,8 @@ else
 	$(error Invalid documentation type. Use 'make docs TYPE=mdbook' or 'make docs TYPE=doxygen')
 endif
 
+TYPE ?= patch
+HAS_CODENAME := $(shell command -v git-codename 2>/dev/null)
 
 release:
 	@if [ -z "$(TYPE)" ]; then \
@@ -151,6 +160,10 @@ release:
 	else \
 		changelog=$$(git cliff --unreleased --strip all); \
 		git cliff --tag $$version --unreleased --prepend CHANGELOG.md; \
+	fi; \
+	if { [ "$(TYPE)" = "minor" ] || [ "$(TYPE)" = "major" ]; } && [ -n "$(HAS_CODENAME)" ]; then \
+		RELEASE_NAME=$$(git-codename "$$changelog"); \
+		echo "-------------- $$RELEASE_NAME --------------"; \
 	fi; \
 	sed -i -E 's/(project\(.*VERSION )[0-9]+\.[0-9]+\.[0-9]+/\1'$$version'/' CMakeLists.txt; \
 	if [ -f xmake.lua ]; then \
