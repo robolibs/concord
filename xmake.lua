@@ -13,6 +13,9 @@ add_cxxflags("-Wall", "-Wextra", "-Wpedantic")
 add_cxxflags("-Wno-reorder", "-Wno-narrowing", "-Wno-array-bounds")
 add_cxxflags("-Wno-unused-variable", "-Wno-unused-parameter", "-Wno-stringop-overflow", "-Wno-unused-but-set-variable")
 
+-- SIMD flags for optinum (AVX2 for modern x86_64)
+add_cxxflags("-mavx2", "-mfma")
+
 -- Add global search paths for packages in ~/.local
 local home = os.getenv("HOME")
 if home then
@@ -120,7 +123,7 @@ package("optinum")
         if not os.isdir(sourcedir) then
             print("Fetching optinum from git...")
             os.mkdir(path.directory(sourcedir))
-            os.execv("git", {"clone", "--quiet", "--depth", "1", "--branch", "0.0.3",
+            os.execv("git", {"clone", "--quiet", "--depth", "1", "--branch", "0.0.4",
                             "-c", "advice.detachedHead=false",
                             "https://github.com/robolibs/optinum.git", sourcedir})
         end

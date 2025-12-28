@@ -1,6 +1,7 @@
 #pragma once
 
 #include <datapod/datapod.hpp>
+#include <optinum/lina/basic/transpose.hpp>
 
 #include "../earth/local_axes.hpp"
 #include "../earth/types.hpp"
@@ -31,14 +32,14 @@ namespace concord::frame {
         const earth::ECF p_ecf = earth::to_ecf(wgs);
         const earth::ECF o_ecf = earth::to_ecf(origin);
 
-        // ECF extends dp::Point, so x/y/z are direct members
-        const dp::Point d{p_ecf.x - o_ecf.x, p_ecf.y - o_ecf.y, p_ecf.z - o_ecf.z};
+        // Difference vector in ECEF
+        const earth::Vector3d d{p_ecf.x - o_ecf.x, p_ecf.y - o_ecf.y, p_ecf.z - o_ecf.z};
 
-        const double lat_rad = origin.lat_rad();
-        const double lon_rad = origin.lon_rad();
-        const auto R = earth::R_enu_from_ecf(lat_rad, lon_rad);
+        // Rotate to ENU using optinum's operator*
+        const auto R = earth::R_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
+        const earth::Vector3d enu_vec = R * d;
 
-        return ENU{earth::mat_mul(R, d), ref};
+        return ENU{enu_vec[0], enu_vec[1], enu_vec[2], ref};
     }
 
     /**
@@ -50,16 +51,18 @@ namespace concord::frame {
      */
     inline earth::WGS to_wgs(const ENU &enu) {
         const earth::WGS origin{enu.origin};
-        const double lat_rad = origin.lat_rad();
-        const double lon_rad = origin.lon_rad();
 
-        const auto R = earth::R_enu_from_ecf(lat_rad, lon_rad);
-        const auto Rt = earth::transpose(R);
-        const dp::Point d = earth::mat_mul(Rt, enu.local);
+        // ENU vector
+        const earth::Vector3d enu_vec{enu.local.x, enu.local.y, enu.local.z};
 
+        // Rotate back to ECEF using transpose (R^T = R^-1 for rotation matrices)
+        const auto R = earth::R_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
+        const auto Rt = optinum::lina::transpose(R);
+        const earth::Vector3d d = Rt * enu_vec;
+
+        // Add origin offset
         const earth::ECF o_ecf = earth::to_ecf(origin);
-        // ECF extends dp::Point, so x/y/z are direct members
-        const earth::ECF p_ecf{o_ecf.x + d.x, o_ecf.y + d.y, o_ecf.z + d.z};
+        const earth::ECF p_ecf{o_ecf.x + d[0], o_ecf.y + d[1], o_ecf.z + d[2]};
         return earth::to_wgs(p_ecf);
     }
 

@@ -47,7 +47,7 @@ if(CONCORD_OPTINUM_SOURCE_DIR AND EXISTS "${CONCORD_OPTINUM_SOURCE_DIR}/CMakeLis
 elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../optinum/CMakeLists.txt")
   FetchContent_Declare(optinum SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../optinum")
 else()
-  FetchContent_Declare(optinum GIT_REPOSITORY https://github.com/robolibs/optinum.git GIT_TAG 0.0.3)
+  FetchContent_Declare(optinum GIT_REPOSITORY https://github.com/robolibs/optinum.git GIT_TAG 0.0.4)
 endif()
 FetchContent_MakeAvailable(optinum)
 list(APPEND lib_deps optinum::optinum)
