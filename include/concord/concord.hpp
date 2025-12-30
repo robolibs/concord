@@ -20,4 +20,5 @@
 
 // Transform realm
 #include "transform/graph.hpp"
+#include "transform/temporal.hpp"
 #include "transform/tree.hpp"
