@@ -1,6 +1,7 @@
 #pragma once
 
 // Earth realm
+#include "earth/batch.hpp"
 #include "earth/local_axes.hpp"
 #include "earth/types.hpp"
 #include "earth/utm.hpp"
