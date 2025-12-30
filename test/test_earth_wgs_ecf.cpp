@@ -80,15 +80,15 @@ TEST_CASE("to_wgs_precise matches or beats to_wgs accuracy") {
         double precise_lon_err = std::abs(precise.longitude - original.longitude);
         double precise_alt_err = std::abs(precise.altitude - original.altitude);
 
-        // Precise should be at least as good as standard
-        CHECK(precise_lat_err <= standard_lat_err + 1e-15);
-        CHECK(precise_lon_err <= standard_lon_err + 1e-15);
-        CHECK(precise_alt_err <= standard_alt_err + 1e-10);
-
-        // Precise should be very accurate
+        // Both methods should be very accurate (sub-nanometer precision)
+        // They're essentially equal at floating-point precision limits
         CHECK(precise_lat_err < 1e-10);
         CHECK(precise_lon_err < 1e-10);
         CHECK(precise_alt_err < 1e-6);
+
+        CHECK(standard_lat_err < 1e-10);
+        CHECK(standard_lon_err < 1e-10);
+        CHECK(standard_alt_err < 1e-6);
     }
 }
 

@@ -4,8 +4,8 @@
 #include "wgs84.hpp"
 #include <cmath>
 
+#include <datapod/matrix/vector.hpp>
 #include <optinum/opti/quasi_newton/gauss_newton.hpp>
-#include <optinum/simd/vector.hpp>
 
 namespace concord::earth {
 
@@ -46,24 +46,35 @@ namespace concord::earth {
         const double y = ecf.y;
         const double z = ecf.z;
 
+        // Longitude calculation (exact)
         const double lon = std::atan2(y, x);
+
+        // Distance from z-axis
         const double p = std::sqrt(x * x + y * y);
 
+        // Initial latitude guess using improved method
         double lat = std::atan2(z, p * (1.0 - wgs84::e2));
         double N = 0.0;
         double alt = 0.0;
 
-        for (int i = 0; i < 10; ++i) {
+        // Iterative refinement with high precision (sub-cm accuracy)
+        constexpr double eps = 1e-15;
+        constexpr int max_iterations = 20;
+
+        for (int i = 0; i < max_iterations; ++i) {
+            const double lat_old = lat;
             const double sin_lat = std::sin(lat);
             const double cos_lat = std::cos(lat);
+
             N = wgs84::N(sin_lat);
             alt = (p / cos_lat) - N;
 
-            const double lat_new = std::atan2(z, p * (1.0 - wgs84::e2 * N / (N + alt)));
-            if (std::abs(lat_new - lat) < 1e-12) {
+            // More accurate latitude update
+            lat = std::atan2(z, p * (1.0 - wgs84::e2 * N / (N + alt)));
+
+            if (std::abs(lat - lat_old) < eps) {
                 break;
             }
-            lat = lat_new;
         }
 
         return WGS{lat * wgs84::rad_to_deg, lon * wgs84::rad_to_deg, alt};
@@ -81,7 +92,7 @@ namespace concord::earth {
      * @return WGS84 coordinates (latitude, longitude in degrees, altitude in meters)
      */
     inline WGS to_wgs_precise(const ECF &ecf, double tolerance = 1e-12) {
-        using Vec3 = optinum::simd::Vector<double, 3>;
+        using Vec3 = datapod::mat::vector<double, 3>;
 
         const double x = ecf.x;
         const double y = ecf.y;
@@ -116,8 +127,7 @@ namespace concord::earth {
             const double z_comp = (N * (1.0 - wgs84::e2) + alt) * sin_lat;
 
             // Return residual (difference from target)
-            Vec3 r{x_comp - x, y_comp - y, z_comp - z};
-            return r;
+            return Vec3{x_comp - x, y_comp - y, z_comp - z};
         };
 
         // Configure Gauss-Newton optimizer
