@@ -87,11 +87,18 @@ namespace concord::earth {
      * It minimizes the residual between the target ECF and the ECF computed from
      * the current lat/lon/alt estimate.
      *
+     * Use this when:
+     * - You need configurable convergence tolerance
+     * - You have noisy ECF measurements and want best-fit WGS coordinates
+     * - You want to integrate with other optimization workflows
+     *
+     * For most cases, the standard to_wgs() is sufficient and faster.
+     *
      * @param ecf ECEF coordinates (x, y, z in meters)
      * @param tolerance Convergence tolerance for the optimizer (default 1e-12)
      * @return WGS84 coordinates (latitude, longitude in degrees, altitude in meters)
      */
-    inline WGS to_wgs_precise(const ECF &ecf, double tolerance = 1e-12) {
+    inline WGS to_wgs_optimized(const ECF &ecf, double tolerance = 1e-12) {
         using Vec3 = datapod::mat::vector<double, 3>;
 
         const double x = ecf.x;

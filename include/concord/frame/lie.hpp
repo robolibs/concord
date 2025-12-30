@@ -25,16 +25,17 @@
 namespace concord::frame {
 
     namespace on = ::optinum;
+    namespace dp = ::datapod;
 
     // ============================================================================
     // Type aliases for tangent vectors (Lie algebra elements)
     // ============================================================================
 
     /// Tangent vector for SO(3) - rotation vector (axis-angle)
-    using RotationTangent = on::simd::Vector<double, 3>;
+    using RotationTangent = dp::mat::vector<double, 3>;
 
     /// Tangent vector for SE(3) - twist [v, omega] where v is translational, omega is rotational
-    using TransformTangent = on::simd::Vector<double, 6>;
+    using TransformTangent = dp::mat::vector<double, 6>;
 
     // ============================================================================
     // Conversion helpers (zero-copy where possible)

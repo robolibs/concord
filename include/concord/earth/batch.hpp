@@ -14,6 +14,7 @@
  */
 
 #include <datapod/datapod.hpp>
+#include <optinum/lina/basic/matmul.hpp>
 #include <span>
 
 #include "../frame/convert.hpp"
@@ -117,7 +118,8 @@ namespace concord::earth {
         // Precompute origin ECF and rotation matrix (shared for all points)
         const WGS origin{ref};
         const ECF o_ecf = to_ecf(origin);
-        const Matrix3d R = R_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
+        const Matrix3d R_data = R_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
+        const optinum::simd::Matrix<double, 3, 3> R(R_data);
 
         // First convert all WGS to ECF using SIMD batch
         dp::Vector<ECF> ecf_coords = batch_to_ecf(wgs_coords);
@@ -129,7 +131,7 @@ namespace concord::earth {
             const Vector3d d{ecf_coords[i].x - o_ecf.x, ecf_coords[i].y - o_ecf.y, ecf_coords[i].z - o_ecf.z};
 
             // Rotate to ENU
-            const Vector3d enu_vec = R * d;
+            const Vector3d enu_vec = optinum::lina::matmul(R, d);
 
             result[i] = frame::ENU{enu_vec[0], enu_vec[1], enu_vec[2], ref};
         }
@@ -158,7 +160,8 @@ namespace concord::earth {
         // Precompute origin ECF and rotation matrix
         const WGS origin{ref};
         const ECF o_ecf = to_ecf(origin);
-        const Matrix3d R = R_ned_from_ecf(origin.lat_rad(), origin.lon_rad());
+        const Matrix3d R_data = R_ned_from_ecf(origin.lat_rad(), origin.lon_rad());
+        const optinum::simd::Matrix<double, 3, 3> R(R_data);
 
         // First convert all WGS to ECF using SIMD batch
         dp::Vector<ECF> ecf_coords = batch_to_ecf(wgs_coords);
@@ -167,7 +170,7 @@ namespace concord::earth {
         for (std::size_t i = 0; i < n; ++i) {
             const Vector3d d{ecf_coords[i].x - o_ecf.x, ecf_coords[i].y - o_ecf.y, ecf_coords[i].z - o_ecf.z};
 
-            const Vector3d ned_vec = R * d;
+            const Vector3d ned_vec = optinum::lina::matmul(R, d);
 
             result[i] = frame::NED{ned_vec[0], ned_vec[1], ned_vec[2], ref};
         }

@@ -43,18 +43,18 @@ TEST_CASE("ECF extends dp::Point") {
     CHECK(pt.x == ecf.x);
 }
 
-TEST_CASE("to_wgs_precise basic round-trip") {
+TEST_CASE("to_wgs_optimized basic round-trip") {
     const earth::WGS original{48.8566, 2.3522, 35.0}; // Paris
 
     const auto ecf = earth::to_ecf(original);
-    const auto back = earth::to_wgs_precise(ecf);
+    const auto back = earth::to_wgs_optimized(ecf);
 
     CHECK(std::abs(back.latitude - original.latitude) < 1e-9);
     CHECK(std::abs(back.longitude - original.longitude) < 1e-9);
     CHECK(std::abs(back.altitude - original.altitude) < 1e-5);
 }
 
-TEST_CASE("to_wgs_precise matches or beats to_wgs accuracy") {
+TEST_CASE("to_wgs_optimized matches or beats to_wgs accuracy") {
     // Test several locations around the globe
     std::vector<earth::WGS> test_points = {
         {0.0, 0.0, 0.0},          // Equator/prime meridian
@@ -69,7 +69,7 @@ TEST_CASE("to_wgs_precise matches or beats to_wgs accuracy") {
         const auto ecf = earth::to_ecf(original);
 
         const auto standard = earth::to_wgs(ecf);
-        const auto precise = earth::to_wgs_precise(ecf);
+        const auto precise = earth::to_wgs_optimized(ecf);
 
         // Calculate errors
         double standard_lat_err = std::abs(standard.latitude - original.latitude);
@@ -92,13 +92,13 @@ TEST_CASE("to_wgs_precise matches or beats to_wgs accuracy") {
     }
 }
 
-TEST_CASE("to_wgs_precise with custom tolerance") {
+TEST_CASE("to_wgs_optimized with custom tolerance") {
     const earth::WGS original{52.5200, 13.4050, 34.0}; // Berlin
     const auto ecf = earth::to_ecf(original);
 
     // Test with different tolerances
-    const auto loose = earth::to_wgs_precise(ecf, 1e-6);
-    const auto tight = earth::to_wgs_precise(ecf, 1e-15);
+    const auto loose = earth::to_wgs_optimized(ecf, 1e-6);
+    const auto tight = earth::to_wgs_optimized(ecf, 1e-15);
 
     // Both should be accurate
     CHECK(std::abs(loose.latitude - original.latitude) < 1e-6);
@@ -110,14 +110,14 @@ TEST_CASE("to_wgs_precise with custom tolerance") {
     CHECK(tight_err <= loose_err + 1e-15);
 }
 
-TEST_CASE("to_wgs_precise handles extreme altitudes") {
+TEST_CASE("to_wgs_optimized handles extreme altitudes") {
     // Test at various altitudes including space
     std::vector<double> altitudes = {-100.0, 0.0, 100.0, 10000.0, 100000.0, 35786000.0}; // Up to GEO
 
     for (double alt : altitudes) {
         const earth::WGS original{45.0, 90.0, alt};
         const auto ecf = earth::to_ecf(original);
-        const auto back = earth::to_wgs_precise(ecf);
+        const auto back = earth::to_wgs_optimized(ecf);
 
         // Relative error for altitude (since absolute values vary widely)
         double alt_err = std::abs(back.altitude - original.altitude);

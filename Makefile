@@ -13,13 +13,9 @@ else
     endif
 endif
 
-ifeq ($(BUILD_SYSTEM),xmake)
-    PROJECT_NAME := $(shell grep 'set_project' xmake.lua | sed 's/set_project("\(.*\)")/\1/')
-else
-    PROJECT_NAME := $(shell grep -Po 'set\s*\(\s*project_name\s+\K[^)]+' CMakeLists.txt)
-    ifeq ($(PROJECT_NAME),)
-        $(error Error: project_name not found in CMakeLists.txt)
-    endif
+PROJECT_NAME := $(shell cat NAME 2>/dev/null | tr -d '[:space:]')
+ifeq ($(PROJECT_NAME),)
+    $(error Error: NAME file not found or empty)
 endif
 
 PROJECT_CAP  := $(shell echo $(PROJECT_NAME) | tr '[:lower:]' '[:upper:]')
@@ -145,7 +141,7 @@ release:
 		echo "Release type not specified. Use 'make release TYPE=[patch|minor|major]'"; \
 		exit 1; \
 	fi; \
-	CURRENT_VERSION=$$(grep -E '^project\(.*VERSION [0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt | sed -E 's/.*VERSION ([0-9]+\.[0-9]+\.[0-9]+).*/\1/'); \
+	CURRENT_VERSION=$$(cat VERSION | tr -d '[:space:]'); \
 	IFS='.' read -r MAJOR MINOR PATCH <<< "$$CURRENT_VERSION"; \
 	case "$(TYPE)" in \
 		major) MAJOR=$$((MAJOR+1)); MINOR=0; PATCH=0 ;; \
@@ -165,10 +161,7 @@ release:
 		RELEASE_NAME=$$(git-codename "$$changelog"); \
 		echo "-------------- $$RELEASE_NAME --------------"; \
 	fi; \
-	sed -i -E 's/(project\(.*VERSION )[0-9]+\.[0-9]+\.[0-9]+/\1'$$version'/' CMakeLists.txt; \
-	if [ -f xmake.lua ]; then \
-		sed -i -E 's/(set_version\(")[0-9]+\.[0-9]+\.[0-9]+/\1'$$version'/' xmake.lua; \
-	fi; \
+	echo "$$version" > VERSION; \
 	git add -A && git commit -m "chore(release): prepare for $$version"; \
 	echo "$$changelog"; \
 	git tag -a $$version -m "$$version" -m "$$changelog"; \

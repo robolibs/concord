@@ -1,18 +1,21 @@
 #pragma once
 
 #include <cmath>
+#include <datapod/matrix/matrix.hpp>
+#include <datapod/matrix/vector.hpp>
 #include <optinum/simd/matrix.hpp>
-#include <optinum/simd/vector.hpp>
 
 #include "wgs84.hpp"
 
 namespace concord::earth {
 
-    namespace on = ::optinum;
+    namespace dp = ::datapod;
 
-    // Type aliases - use optinum types directly
-    using Matrix3d = on::simd::Matrix<double, 3, 3>;
-    using Vector3d = on::simd::Vector<double, 3>;
+    // Type aliases
+    // Both Matrix and Vector use datapod types (own their data)
+    // Use optinum::simd::Matrix as a view when needed for matmul
+    using Matrix3d = dp::mat::matrix<double, 3, 3>;
+    using Vector3d = dp::mat::vector<double, 3>;
 
     /**
      * @brief Rotation matrix from ECEF to ENU frame

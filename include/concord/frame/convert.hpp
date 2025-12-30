@@ -1,6 +1,7 @@
 #pragma once
 
 #include <datapod/datapod.hpp>
+#include <optinum/lina/basic/matmul.hpp>
 #include <optinum/lina/basic/transpose.hpp>
 
 #include "../earth/local_axes.hpp"
@@ -35,9 +36,10 @@ namespace concord::frame {
         // Difference vector in ECEF
         const earth::Vector3d d{p_ecf.x - o_ecf.x, p_ecf.y - o_ecf.y, p_ecf.z - o_ecf.z};
 
-        // Rotate to ENU using optinum's operator*
-        const auto R = earth::R_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
-        const earth::Vector3d enu_vec = R * d;
+        // Rotate to ENU using optinum's matmul (wrap matrix in simd::Matrix view)
+        const auto R_data = earth::R_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
+        const optinum::simd::Matrix<double, 3, 3> R(R_data);
+        const earth::Vector3d enu_vec = optinum::lina::matmul(R, d);
 
         return ENU{enu_vec[0], enu_vec[1], enu_vec[2], ref};
     }
@@ -56,9 +58,11 @@ namespace concord::frame {
         const earth::Vector3d enu_vec{enu.local.x, enu.local.y, enu.local.z};
 
         // Rotate back to ECEF using transpose (R^T = R^-1 for rotation matrices)
-        const auto R = earth::R_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
-        const auto Rt = optinum::lina::transpose(R);
-        const earth::Vector3d d = Rt * enu_vec;
+        const auto R_data = earth::R_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
+        const optinum::simd::Matrix<double, 3, 3> R(R_data);
+        const auto Rt_data = optinum::lina::transpose(R);
+        const optinum::simd::Matrix<double, 3, 3> Rt(Rt_data);
+        const earth::Vector3d d = optinum::lina::matmul(Rt, enu_vec);
 
         // Add origin offset
         const earth::ECF o_ecf = earth::to_ecf(origin);
