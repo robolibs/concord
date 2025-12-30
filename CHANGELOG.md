@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.0.2] - 2025-12-30
+
+### <!-- 0 -->⛰️  Features
+
+- Enhance README with datapod, frames, and transforms
+- Add transform listeners and callbacks
+- Add time-interpolated transforms and robot example
+- Add frame graph and transform tree using graphix
+- Modernize CMake, consolidate build system
+- Add to_wgs_precise with optimizer-based convergence
+- Add batch coordinate conversion functions
+- Add splines for frame-safe types
+- Add Lie group ops for concord frames
+- Accelerate local axes calculations with SIMD
+- Refactor ECF to inherit from dp::Point
+- Revamp local frames to carry origin
+- Integrate with Datapod types
+- Introduce compile-time safe coordinate frame transformations
+- Full restructure
+
+### <!-- 1 -->🐛 Bug Fixes
+
+- Improve to_wgs precision to match original sub-cm accuracy
+
+### <!-- 2 -->🚜 Refactor
+
+- Set project version to 0.0.0 as complete REWRITE
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Refactor build system for modularity and standardized naming
+- Improve build logging and test execution
+
+### Build
+
+- Update datapod dependency to 0.0.13
+- Add `frame_types_usage` example
+- Override build system and update project name detection
+
 ## [2.5.0] - 2025-12-11
 
 ### <!-- 0 -->⛰️  Features
