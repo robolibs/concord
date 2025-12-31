@@ -6,6 +6,8 @@
 
 #include "tags.hpp"
 
+namespace dp = ::datapod;
+
 namespace concord::frame {
 
     // ============================================================================

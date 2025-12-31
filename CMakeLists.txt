@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 # ==================================================================================================
 # Project configuration
 # ==================================================================================================
-set(PROJECT_NAME graphix)
+set(PROJECT_NAME concord)
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" PROJECT_VERSION)
 string(STRIP "${PROJECT_VERSION}" PROJECT_VERSION)
 

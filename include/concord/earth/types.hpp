@@ -5,6 +5,8 @@
 
 #include "wgs84.hpp"
 
+namespace dp = ::datapod;
+
 namespace concord::earth {
 
     // Unit for angular values

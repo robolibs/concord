@@ -4,6 +4,8 @@
 
 #include "../earth/types.hpp"
 
+namespace dp = ::datapod;
+
 namespace concord::frame {
 
     /**
