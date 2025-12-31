@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.3] - 2025-12-31
+
+### <!-- 1 -->🐛 Bug Fixes
+
+- Resolve build issues in Frame and Earth modules
+
 ## [0.0.2] - 2025-12-30
 
 ### <!-- 0 -->⛰️  Features
