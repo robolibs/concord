@@ -2,7 +2,7 @@
 -- NOTE: Due to xmake description domain limitations, PROJECT_NAME must be hardcoded
 --       and kept in sync with the NAME file. The VERSION is read dynamically.
 local PROJECT_NAME = "concord"
-local PROJECT_VERSION = "0.0.4"
+local PROJECT_VERSION = "0.0.5"
 
 -- Dependencies formats:
 --   Git:    {"name", "https://github.com/org/repo.git", "tag"}

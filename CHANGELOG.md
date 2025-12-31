@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.5] - 2025-12-31
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Refactor and enhance build system
+
 ## [0.0.4] - 2025-12-31
 
 ### <!-- 7 -->⚙️ Miscellaneous Tasks
