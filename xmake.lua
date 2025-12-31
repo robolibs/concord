@@ -10,8 +10,8 @@ local PROJECT_VERSION = "0.0.3"
 --   System: "pkgconfig::libname" or {system = "boost"}
 local LIB_DEPS = {
     {"datapod", "https://github.com/robolibs/datapod.git", "0.0.16"},
-    {"optinum", "https://github.com/robolibs/optinum.git", "0.0.12"},
-    {"graphix", "https://github.com/robolibs/graphix.git", "0.0.2"},
+    {"optinum", "https://github.com/robolibs/optinum.git", "0.0.13"},
+    {"graphix", "https://github.com/robolibs/graphix.git", "0.0.3"},
 }
 local EXAMPLE_DEPS = {
     {system = "rerun_sdk"},
