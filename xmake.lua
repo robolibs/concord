@@ -2,14 +2,14 @@
 -- NOTE: Due to xmake description domain limitations, PROJECT_NAME must be hardcoded
 --       and kept in sync with the NAME file. The VERSION is read dynamically.
 local PROJECT_NAME = "concord"
-local PROJECT_VERSION = "$(shell cat VERSION)"
+local PROJECT_VERSION = "0.0.3"
 
 -- Dependencies formats:
 --   Git:    {"name", "https://github.com/org/repo.git", "tag"}
 --   Local:  {"name", "../path/to/local"}  (optional: uses git if not found)
 --   System: "pkgconfig::libname" or {system = "boost"}
 local LIB_DEPS = {
-    {"datapod", "https://github.com/robolibs/datapod.git", "0.0.15"},
+    {"datapod", "https://github.com/robolibs/datapod.git", "0.0.16"},
     {"optinum", "https://github.com/robolibs/optinum.git", "0.0.12"},
     {"graphix", "https://github.com/robolibs/graphix.git", "0.0.2"},
 }
@@ -27,12 +27,42 @@ set_xmakever("2.7.0")
 set_languages("c++20")
 add_rules("mode.debug", "mode.release")
 
--- Compiler flags
-add_cxxflags("-Wall", "-Wextra", "-Wpedantic",
-             "-Wno-reorder", "-Wno-narrowing", "-Wno-array-bounds",
-             "-Wno-unused-variable", "-Wno-unused-parameter",
-             "-Wno-stringop-overflow", "-Wno-unused-but-set-variable",
-             "-Wno-gnu-line-marker", "-Wno-comment")
+-- Compiler selection option
+-- Usage: xmake f --toolchain=gcc or xmake f --toolchain=clang
+option("toolchain", {default = nil, showmenu = true, description = "Compiler toolchain: gcc, clang, or nil for default"})
+
+if has_config("toolchain") then
+    local tc = get_config("toolchain")
+    if tc == "gcc" then
+        set_toolchains("gcc")
+    elseif tc == "clang" then
+        set_toolchains("clang")
+    end
+end
+
+-- Common compiler flags
+local COMMON_FLAGS = {
+    "-Wall", "-Wextra", "-Wpedantic",
+    "-Wno-reorder", "-Wno-narrowing", "-Wno-array-bounds",
+    "-Wno-unused-variable", "-Wno-unused-parameter",
+    "-Wno-unused-but-set-variable", "-Wno-gnu-line-marker", "-Wno-comment"
+}
+
+-- Add common flags
+for _, flag in ipairs(COMMON_FLAGS) do
+    add_cxxflags(flag)
+end
+
+-- Compiler-specific flags
+if is_plat("linux", "macosx") then
+    on_load(function (target)
+        if target:toolchain("gcc") then
+            target:add("cxxflags", "-Wno-stringop-overflow")
+        elseif target:toolchain("clang") then
+            target:add("cxxflags", "-Wno-unknown-warning-option")
+        end
+    end)
+end
 
 -- Architecture-specific SIMD flags
 if is_arch("x86_64", "x64", "i386", "x86") then
@@ -43,37 +73,6 @@ elseif is_arch("arm", "armv7", "armv7-a") then
     add_cxxflags("-mfpu=neon", "-mfloat-abi=hard")
 end
 
--- Environment paths (HOME, CMAKE_PREFIX_PATH, PKG_CONFIG_PATH)
-local function add_env_paths()
-    local home = os.getenv("HOME")
-    if home then
-        add_includedirs(path.join(home, ".local/include"))
-        add_linkdirs(path.join(home, ".local/lib"))
-    end
-
-    local cmake_prefix = os.getenv("CMAKE_PREFIX_PATH")
-    if cmake_prefix then
-        add_includedirs(path.join(cmake_prefix, "include"))
-        add_linkdirs(path.join(cmake_prefix, "lib"))
-    end
-
-    local pkg_config = os.getenv("PKG_CONFIG_PATH")
-    if pkg_config then
-        for _, p in ipairs(pkg_config:split(':')) do
-            if os.isdir(p) then
-                local lib_dir = path.directory(p)
-                local prefix = path.directory(lib_dir)
-                if prefix ~= "/usr" and prefix ~= "/usr/local" then
-                    if os.isdir(lib_dir) then add_linkdirs(lib_dir) end
-                    if os.isdir(path.join(prefix, "include")) then
-                        add_includedirs(path.join(prefix, "include"))
-                    end
-                end
-            end
-        end
-    end
-end
-add_env_paths()
 
 -- Options
 option("examples", {default = false, showmenu = true, description = "Build examples"})
@@ -127,7 +126,12 @@ local function process_dep(dep)
             end
         end)
         on_install(function (pkg)
-            local configs = {"-DCMAKE_BUILD_TYPE=" .. (pkg:is_debug() and "Debug" or "Release")}
+            local configs = {
+                "-DCMAKE_BUILD_TYPE=" .. (pkg:is_debug() and "Debug" or "Release"),
+                -- Disable doctest examples/tests to avoid -Werror issues with clang
+                "-DDOCTEST_WITH_TESTS=OFF",
+                "-DDOCTEST_WITH_MAIN_IN_STATIC_LIB=OFF"
+            }
             import("package.tools.cmake").install(pkg, configs, {cmake_generator = "Unix Makefiles"})
         end)
     package_end()
@@ -206,7 +210,8 @@ end
 if os.projectdir() == os.curdir() then
     if has_config("examples") then
         add_binaries("examples/*.cpp", {
-            packages = EXAMPLE_DEP_NAMES
+            packages = EXAMPLE_DEP_NAMES,
+            defines = {"HAS_RERUN"}
         })
     end
 
