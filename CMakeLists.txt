@@ -13,7 +13,7 @@ set(PROJECT_VERSION "0.0.4")
 set(LIB_DEPS
     "datapod|https://github.com/robolibs/datapod.git|0.0.16"
     "optinum|https://github.com/robolibs/optinum.git|0.0.13"
-    "graphix|https://github.com/robolibs/graphix.git|0.0.3"
+    "graphix|https://github.com/robolibs/graphix.git|0.0.4"
 )
 set(EXAMPLE_DEPS
     "pkg::rerun_sdk"
@@ -73,16 +73,26 @@ else()
     add_compile_options(${COMMON_FLAGS})
 endif()
 
-# Architecture-specific SIMD flags
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|i[3-6]86")
-    add_compile_options(-mavx -mavx2 -mfma)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
-    # ARM64: NEON is enabled by default
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
-    add_compile_options(-mfpu=neon -mfloat-abi=hard)
-endif()
-
+# Project name uppercase (needed for option names)
 string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
+
+# SIMD configuration option
+option(${PROJECT_NAME_UPPER}_ENABLE_SIMD "Enable SIMD optimizations" ON)
+
+# Architecture-specific SIMD flags
+if(${PROJECT_NAME_UPPER}_ENABLE_SIMD)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|i[3-6]86")
+        add_compile_options(-mavx -mavx2 -mfma)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+        # ARM64: NEON is enabled by default
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
+        add_compile_options(-mfpu=neon -mfloat-abi=hard)
+    endif()
+else()
+    # Define macro to disable SIMD in the code
+    add_compile_definitions(CONCORD_SIMD_DISABLED)
+    message(STATUS "SIMD optimizations disabled")
+endif()
 option(${PROJECT_NAME_UPPER}_BUILD_EXAMPLES "Build examples" OFF)
 option(${PROJECT_NAME_UPPER}_ENABLE_TESTS "Enable tests" OFF)
 option(SHORT_NAMESPACE "Enable short namespace alias" ON)
@@ -197,7 +207,7 @@ if(${PROJECT_NAME_UPPER}_BUILD_EXAMPLES)
     foreach(src_file IN LISTS example_sources)
         get_filename_component(exec_name "${src_file}" NAME_WE)
         add_executable(${exec_name} "${src_file}")
-        target_compile_definitions(${exec_name} PRIVATE SHORT_NAMESPACE HAS_RERUN)
+        target_compile_definitions(${exec_name} PRIVATE SHORT_NAMESPACE HAS_RERUN PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
         target_link_libraries(${exec_name} ${PROJECT_NAME}::${PROJECT_NAME} ${ALL_EXAMPLE_DEPS})
         install(TARGETS ${exec_name} DESTINATION bin)
     endforeach()
@@ -215,7 +225,7 @@ if(${PROJECT_NAME_UPPER}_ENABLE_TESTS)
     foreach(src_file IN LISTS test_sources)
         get_filename_component(test_name "${src_file}" NAME_WE)
         add_executable(${test_name} "${src_file}")
-        target_compile_definitions(${test_name} PRIVATE SHORT_NAMESPACE DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN)
+        target_compile_definitions(${test_name} PRIVATE SHORT_NAMESPACE DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
         target_link_libraries(${test_name} ${PROJECT_NAME}::${PROJECT_NAME} ${ALL_TEST_DEPS})
         add_test(NAME ${test_name} COMMAND ${test_name})
     endforeach()
