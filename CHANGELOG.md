@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.4] - 2025-12-31
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Enhance build system and compiler flexibility
+
+### Build
+
+- Update dependency versions
+
 ## [0.0.3] - 2025-12-31
 
 ### <!-- 1 -->🐛 Bug Fixes
