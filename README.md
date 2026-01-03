@@ -2,817 +2,408 @@
 
 # Concord
 
-A comprehensive C++ library for geodetic coordinate systems, spatial algorithms, and geometric operations with modern architecture.
+Type-safe coordinate transformations for robotics: WGS84, ECEF, UTM, ENU, NED with compile-time frame safety and datapod integration.
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/bresilla/concord)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![C++](https://img.shields.io/badge/C%2B%2B-20-orange.svg)](https://isocpp.org/)
+## Development Status
+
+See [TODO.md](./TODO.md) for the complete development plan and current progress.
 
 ## Overview
 
-Concord is a modern C++20 library providing a complete suite of tools for geodetic coordinates, spatial data structures, and geometric algorithms. Designed for GIS, robotics, surveying, navigation, and any domain requiring precise spatial computations.
+Concord is a modern C++ coordinate transformation library designed for robotics applications. It provides geodetic conversions (WGS84 ↔ ECEF ↔ UTM) and local frame transformations (ENU, NED) with compile-time frame safety.
 
-### 🏗️ Modern Architecture
+**Why Concord?**
+- **Frame-safe transforms** - Compile-time validation prevents mixing incompatible coordinate frames
+- **Self-contained local frames** - ENU/NED types extend `dp::Loc` and carry their reference origin, enabling round-trip conversions without external state
+- **SE(3) transforms** - Full rigid-body transformations with composition, inverse, and Lie group operations
+- **Transform trees** - Runtime frame graphs with BFS path finding and temporal interpolation
+- **Zero-dependency geodesy** - WGS84, ECEF, UTM conversions without external libraries
+- **Datapod backend** - Seamless integration with datapod's POD types for serialization
 
-Concord features a clean, modular architecture organized into logical components:
+### Architecture
 
 ```
-concord/
-├── core/                    # Foundation components
-│   ├── types/               # Basic types (Point, Size, etc.)
-│   ├── math/                # Mathematical operations  
-│   ├── errors/              # Error handling
-│   └── precision/           # Precision handling
-├── algorithms/              # Spatial algorithms
-│   ├── algorithms.hpp       # Aggregate include for all algorithms
-│   ├── distance.hpp         # Distance calculations
-│   ├── intersection.hpp     # Intersection algorithms
-│   ├── convex_hull.hpp      # Convex hull algorithms
-│   ├── spatial_algorithms.hpp # General spatial helpers (hulls, buffers, clustering)
-│   └── triangulation.hpp    # Triangulation algorithms
-├── geometry/                # Geometric shapes
-│   ├── primitives/          # Basic shapes (Circle, Line, etc.)
-│   ├── polygon/             # Polygon operations
-│   └── grid/                # Grid structures
-├── geographic/              # Geographic systems
-│   ├── crs/                 # Coordinate reference systems
-│   ├── transformations/     # Coordinate transformations
-│   └── projections/         # Map projections
-├── indexing/                # Spatial indexing
-│   ├── rtree/               # R-tree implementation
-│   ├── quadtree/            # QuadTree implementation
-│   └── hash_grid/           # Spatial hash grid
-└── builders/                # Fluent APIs
-    ├── coordinate_builder.hpp
-    ├── geometry_builder.hpp
-    └── spatial_builder.hpp
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                               CONCORD                                        │
+├───────────────────────────┬─────────────────────────────────────────────────┤
+│       EARTH REALM         │                  FRAME REALM                     │
+│                           │                                                  │
+│  ┌───────┐  ┌───────┐     │  ┌───────────┐  ┌───────────┐  ┌─────────────┐  │
+│  │  WGS  │  │  ECF  │     │  │ ENU (Loc) │  │ NED (Loc) │  │ Transform   │  │
+│  │ (Geo) │  │(Point)│     │  │ +origin   │  │ +origin   │  │  <To,From>  │  │
+│  └───┬───┘  └───┬───┘     │  └─────┬─────┘  └─────┬─────┘  └──────┬──────┘  │
+│      │          │         │        │              │               │         │
+│  ┌───┴──────────┴───┐     │  ┌─────┴──────────────┴─────┐  ┌──────┴──────┐  │
+│  │       UTM        │     │  │      FRD  /  FLU         │  │  Rotation   │  │
+│  │     (dp::Utm)    │     │  │   (body frames, Point)   │  │  <To,From>  │  │
+│  └──────────────────┘     │  └──────────────────────────┘  └─────────────┘  │
+├───────────────────────────┴─────────────────────────────────────────────────┤
+│                          TRANSFORM REALM                                     │
+│  ┌──────────────────┐  ┌────────────────────┐  ┌─────────────────────────┐  │
+│  │   FrameGraph     │  │   TransformTree    │  │  TimedTransformTree     │  │
+│  │  (graphix-based) │  │  (BFS path find)   │  │  (temporal interpolate) │  │
+│  └──────────────────┘  └────────────────────┘  └─────────────────────────┘  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                    convert(wgs).withRef(origin).to<ENU>()                    │
+│                         Fluent conversion builder                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                            ┌───────▼────────┐
+                            │    DATAPOD     │
+                            │ dp::Loc/Geo/Utm│
+                            └────────────────┘
 ```
-
-### ✨ Key Features
-
-- **🌍 Coordinate Systems**: WGS, UTM, ENU, ECEF, LTP with fluent transformations
-- **🧮 Mathematical Core**: Vectors, matrices, quaternions, transformations  
-- **📐 Rich Geometry**: Points, lines, circles, polygons, paths, grids, bounding volumes
-- **� Spatial Algorithms**: Distance, intersections, convex hulls, triangulation
-- **✂️ Polygon Processing**: Intelligent partitioning based on area, convexity, shape
-- **🚀 Spatial Indexing**: R-Trees, QuadTrees, hash grids for efficient queries
-- **🎯 Builder Pattern**: Fluent APIs for coordinate transformations
-- **⚡ High Performance**: Optimized algorithms with modern C++20 practices
-
----
 
 ## Installation
 
-### CMake Integration
+### Quick Start (CMake FetchContent)
 
 ```cmake
+include(FetchContent)
 FetchContent_Declare(
   concord
-  GIT_REPOSITORY https://github.com/bresilla/concord.git
-  GIT_TAG        develop
+  GIT_REPOSITORY https://github.com/robolibs/concord
+  GIT_TAG main
 )
 FetchContent_MakeAvailable(concord)
 
 target_link_libraries(your_target PRIVATE concord::concord)
 ```
 
-### Manual Build
+### Recommended: XMake
 
-```bash
-git clone https://github.com/bresilla/concord.git
-cd concord
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
+[XMake](https://xmake.io/) is a modern, fast, and cross-platform build system.
+
+```lua
+add_requires("concord")
+
+target("your_target")
+    set_kind("binary")
+    add_packages("concord")
+    add_files("src/*.cpp")
 ```
 
----
+### Development Environment (Nix + Devbox)
 
-## Quick Start
+```bash
+cd concord
+direnv allow    # Automatically loads environment
+make config && make build && make test
+```
 
-### Fluent Coordinate Transformations (New!)
+## Usage
+
+### Self-Contained Local Frames (dp::Loc Integration)
+
+The key design feature: ENU and NED extend `dp::Loc`, carrying their reference origin internally. This enables round-trip conversions without external state:
 
 ```cpp
 #include <concord/concord.hpp>
 using namespace concord;
 
-// Create a reference datum
-Datum seattle_datum(47.6062, -122.3321, 56.0);
+// Define reference origin
+dp::Geo paris{48.8566, 2.3522, 35.0};
 
-// Template-based fluent coordinate transformations
-Point local_point(100.0, 200.0, 50.0);
+// Convert GPS waypoint to local ENU frame
+earth::WGS waypoint{48.8570, 2.3530, 5.0};
+frame::ENU local = frame::to_enu(paris, waypoint);
 
-// Point -> ENU -> WGS using template syntax
-auto wgs_result = convert(local_point)
-    .withDatum(seattle_datum)
-    .as<ENU>()
-    .to<WGS>()
+// ENU carries its origin - access it anytime
+std::cout << "Origin: " << local.origin.latitude << "\n";
+
+// Convert back to WGS - NO external reference needed!
+earth::WGS back = frame::to_wgs(local);  // Self-contained!
+
+// Use semantic accessors
+std::cout << "East: " << local.east() << "m, "
+          << "North: " << local.north() << "m\n";
+```
+
+### Fluent Conversion Builder
+
+Chain conversions with automatic reference propagation:
+
+```cpp
+// WGS -> ENU requires reference
+auto enu = convert(waypoint).withRef(paris).to<frame::ENU>().build();
+
+// ENU -> WGS needs NO reference (ENU carries it!)
+auto wgs = convert(enu.value()).to<earth::WGS>().build();
+
+// Chain multiple conversions
+auto result = convert(gps_pos)
+    .withRef(datum)
+    .to<frame::ENU>()
+    .to<frame::NED>()
+    .to<earth::WGS>()
     .build();
-
-std::cout << "WGS coordinates: " << wgs_result.lat << ", " 
-          << wgs_result.lon << ", " << wgs_result.alt << std::endl;
-
-// Direct conversion with templates
-auto enu_direct = convert(local_point)
-    .withDatum(seattle_datum)
-    .as<ENU>();
-
-// WGS -> ENU transformation
-WGS portland(45.5152, -122.6784, 15.0);
-auto enu_result = convert(portland)
-    .withDatum(seattle_datum)
-    .to<ENU>();
-
-// Multiple transformation chains
-auto final_point = convert(local_point)
-    .withDatum(seattle_datum)
-    .as<ENU>()
-    .to<WGS>()
-    .to<ENU>()
-    .as<Point>();
 ```
 
-### Traditional Coordinate Conversion
+### Datapod Interoperability
+
+Concord types extend datapod types - zero-copy interop:
 
 ```cpp
-// WGS84 coordinates (latitude, longitude, altitude)
-WGS seattle(47.6062, -122.3321, 56.0);
-WGS portland(45.5152, -122.6784, 15.0);
+// dp::Geo <-> earth::WGS (same memory layout)
+dp::Geo geo{48.8566, 2.3522, 35.0};
+earth::WGS wgs{geo};  // Zero-copy construction
+const dp::Geo& ref = wgs;  // Implicit conversion
 
-// Calculate distance between points
-double distance = seattle.distance_to(portland);
-std::cout << "Distance: " << distance << " meters" << std::endl;
+// dp::Loc <-> frame::ENU/NED (ENU IS-A dp::Loc)
+dp::Loc robot_loc{dp::Point{100, 50, 5}, geo};
+frame::ENU enu{robot_loc};
+double dist = enu.distance_from_origin();  // dp::Loc method!
 
-// WGS84 to ENU conversion
-Datum origin_datum(47.6062, -122.3321, 56.0);
-ENU enu_point = seattle.toENU(origin_datum);
-std::cout << "ENU: " << enu_point.x << ", " << enu_point.y << ", " << enu_point.z << std::endl;
+// dp::Point <-> frame::FRD/FLU (body frames)
+dp::Point offset{0.5, 0.0, 0.3};
+frame::FLU sensor{offset};
+double mag = sensor.magnitude();  // dp::Point method!
 ```
 
-### Spatial Indexing & Queries
+### SE(3) Transforms and Frame Trees
+
+Build robot TF trees with compile-time frame safety:
 
 ```cpp
-// Create spatial hash grid for efficient queries
-SpatialHashGrid<int> grid(10.0); // 10 unit cell size
+using namespace concord::frame;
 
-// Insert points with associated data
-Point p1(15, 25, 0);
-Point p2(18, 22, 0);
-grid.insert(p1, 100);
-grid.insert(p2, 200);
+// Define frame tags (empty structs)
+struct World {};
+struct Body {};
+struct Camera {};
 
-// Query nearby points
-auto nearby = grid.query(Point(16, 24, 0), 5.0);
-for (const auto& result : nearby) {
-    std::cout << "Found data: " << result << std::endl;
+// Create transforms
+auto T_world_body = Transform<World, Body>::from_qt(
+    dp::Quaternion{0.707, 0.0, 0.0, 0.707},
+    dp::Point{10.0, 5.0, 0.0}
+);
+
+auto T_body_camera = Transform<Body, Camera>::from_qt(
+    dp::Quaternion{1.0, 0.0, 0.0, 0.0},
+    dp::Point{0.3, 0.0, 0.5}
+);
+
+// Compose: T_world_camera = T_world_body * T_body_camera
+auto T_world_camera = T_world_body * T_body_camera;
+
+// Transform points
+dp::Point p_camera{2.0, 0.0, 0.0};
+dp::Point p_world = T_world_camera * p_camera;
+```
+
+### Runtime Transform Tree with Path Finding
+
+```cpp
+transform::TransformTree tree;
+
+// Register frames
+tree.register_frame<World>("world");
+tree.register_frame<Body>("base_link");
+tree.register_frame<Camera>("camera");
+
+// Set transforms
+tree.set_transform("base_link", "camera", T_body_camera);
+tree.set_transform("world", "base_link", T_world_body);
+
+// Lookup ANY transform (automatic path finding via BFS)
+auto tf = tree.lookup("world", "camera");
+if (tf) {
+    dp::Point p = tf->apply(dp::Point{1, 0, 0});
+}
+
+// Get path for debugging
+auto path = tree.get_path("world", "camera");
+// -> ["world", "base_link", "camera"]
+```
+
+### Temporal Transform Tree (Time-Interpolated Lookups)
+
+```cpp
+transform::TimedTransformTree tree;
+
+tree.register_frame<World>("world");
+tree.register_frame<Body>("base_link");
+
+// Add timestamped transforms
+tree.set_transform("world", "base_link", tf1, 1.0);  // t=1.0s
+tree.set_transform("world", "base_link", tf2, 2.0);  // t=2.0s
+
+// Lookup with interpolation
+auto tf = tree.lookup("world", "base_link", 1.5);  // Interpolated!
+
+// Static transforms (no time history)
+tree.set_static("base_link", "camera", T_body_camera);
+```
+
+### Lie Group Operations
+
+```cpp
+using namespace concord::frame;
+
+// Exponential/logarithmic maps
+RotationTangent omega{0.1, 0.2, 0.3};  // axis-angle
+auto rot = exp<World, Body>(omega);
+auto back = log(rot);
+
+// Geodesic interpolation (SLERP)
+auto mid = slerp(rot1, rot2, 0.5);
+
+// Karcher mean of multiple rotations
+std::vector<Rotation<World, Body>> rotations = {...};
+auto mean = average(std::span{rotations});
+
+// Spline interpolation through transforms
+TransformSpline<World, Body> spline;
+spline.add_point(tf1);
+spline.add_point(tf2);
+spline.add_point(tf3);
+spline.build();
+auto smooth = spline.evaluate_normalized(0.5);
+```
+
+### Batch Conversions
+
+```cpp
+// SIMD-accelerated batch conversion
+std::vector<earth::WGS> gps_points = {...};
+dp::Vector<frame::ENU> enu_batch = earth::batch_to_enu(origin, gps_points);
+
+// Each ENU carries the shared origin
+for (const auto& enu : enu_batch) {
+    earth::WGS wgs = frame::to_wgs(enu);  // Self-contained!
 }
 ```
 
----
-
-## Architecture & Components
-
-### 🏗️ Modular Design
-
-Concord's architecture is built around specialized modules:
-
-#### Core Foundation
-- **Types**: `Point`, `Size`, `Bound` - fundamental geometric types
-- **Math**: `Vec3d`, `Mat3d`, `Quaternion` - mathematical primitives
-- **Errors**: Comprehensive error handling and validation
-- **Precision**: High-precision arithmetic operations
-
-#### Geometric Primitives
-```cpp
-#include <concord/geometry/primitives/primitives.hpp>
-
-Circle circle(center, radius);
-Line line(start_point, end_point);
-Rectangle rect(top_left, bottom_right);
-Square square(center, side_length);
-```
-
-#### Advanced Algorithms
-```cpp
-#include <concord/algorithms/algorithms.hpp>
-
-// Distance calculations
-double dist = algorithms::distance::euclidean(p1, p2);
-double manhattan_dist = algorithms::distance::manhattan(p1, p2);
-
-// Intersection algorithms (declarations only currently)
-auto intersection = algorithms::intersection::line_line(line1, line2);
-
-// Convex hull generation
-auto hull = algorithms::convex_hull::graham_scan(points);
-
-// Triangulation (API declared; implementation may be provided by the user or future versions)
-auto triangles = algorithms::triangulation::delaunay(points);
-```
-
-#### Spatial Indexing
-```cpp
-#include <concord/indexing/indexing.hpp>
-
-// R-tree for complex spatial queries
-indexing::RTree<MyData> rtree;
-rtree.insert(bounding_box, data);
-auto results = rtree.search(query_bounds);
-
-// QuadTree for 2D spatial partitioning
-indexing::QuadTree<MyData> quadtree;
-
-// Hash grid for fast proximity queries  
-indexing::SpatialHashGrid<MyData> hash_grid(cell_size);
-```
-
----
-
-## Coordinate Systems
-
-### Supported Systems
-
-Concord supports a wide range of coordinate systems for global compatibility:
-
-#### WGS84 (World Geodetic System 1984)
-```cpp
-WGS point(latitude, longitude, altitude);
-point.validate();  // Throws exception if invalid
-```
-
-#### UTM (Universal Transverse Mercator)
-```cpp
-auto [easting, northing, zone, is_north] = wgs_to_utm(lat, lon);
-UTM utm_point(easting, northing, altitude, zone, is_north);
-```
-
-#### ENU (East-North-Up)
-```cpp
-ENU local_point(east, north, up);
-WGS global = local_point.toWGS(datum_origin);
-```
-
-#### ECEF (Earth-Centered, Earth-Fixed)
-```cpp
-ECEF ecef_point = ECEF::fromWGS(wgs_point);
-WGS converted_back = ecef_point.toWGS();
-```
-
-#### LTP (Local Tangent Plane)
-```cpp
-LTP ltp_point(north, east, up);
-ENU enu_equivalent = ltp_point.toENU();
-```
-
-#### Additional Systems
-- **State Plane Coordinate System** (US-specific)
-- **British National Grid** (UK-specific)
-- **Multiple Datum Support**: WGS84, NAD83, NAD27, OSGB36, ED50, GDA94, Tokyo
-
----
-
-## Mathematical Types
-
-### Vectors and Matrices
-
-```cpp
-// 3D Vector operations
-Vec3d v1{1.0, 2.0, 3.0};
-Vec3d v2{4.0, 5.0, 6.0};
-
-Vec3d sum = v1 + v2;
-double dot = v1.dot(v2);
-Vec3d cross = cross(v1, v2);
-Vec3d normalized = v1.normalized();
-
-// Matrix operations
-Mat3d rotation = create_rotation_z(M_PI / 4);  // 45° rotation
-Mat3d identity = Mat3d::identity();
-```
-
-### Quaternions and Transformations
-
-```cpp
-// Quaternion for rotations
-Quaternion q1(w, x, y, z);
-Quaternion q2 = Quaternion::fromEuler(roll, pitch, yaw);
-
-Quaternion result = q1 * q2;  // Composition
-Vec3d rotated = q1.rotate(vector);
-
-// Euler angles
-Euler euler(roll, pitch, yaw);
-Quaternion q = euler.toQuaternion();
-```
-
----
-
-## Geometric Types
-
-### Basic Shapes
-
-#### Points
-```cpp
-Point point(ENU{x, y, z}, datum);
-Point wgs_point(WGS{lat, lon, alt});
-
-double distance = point1.distance_to(point2);
-bool valid = point.validate();
-```
-
-#### Lines
-```cpp
-Line line(start_point, end_point);
-double length = line.length();
-Point midpoint = line.midpoint();
-bool intersects = line.intersects(other_line);
-```
-
-#### Circles
-```cpp
-Circle circle(center_point, radius);
-double area = circle.area();
-double circumference = circle.circumference();
-bool contains = circle.contains(point);
-```
-
-#### Rectangles and Squares
-```cpp
-Rectangle rect(corner1, corner2);
-Square square(center, side_length);
-
-double area = rect.area();
-bool inside = rect.contains(point);
-```
-
-### Advanced Shapes
-
-#### Polygons
-```cpp
-std::vector<Point> vertices = {p1, p2, p3, p4};
-Polygon polygon(vertices);
-
-double area = polygon.area();
-double perimeter = polygon.perimeter();
-bool is_convex = polygon.isConvex();
-bool point_inside = polygon.contains(point);
-```
-
-#### Polygon Partitioning
-```cpp
-// Intelligently partition large polygons
-Partitioner partitioner(polygon);
-
-// Split by area (500 square units maximum)
-std::vector<Polygon> partitioned = partitioner.partition(500.0);
-
-// Custom partitioning criteria
-Partitioner::PartitionCriteria criteria;
-criteria.max_area = 1000.0;            // Maximum area per polygon
-criteria.min_convexity = 0.8;          // Minimum convexity ratio
-criteria.max_aspect_ratio = 3.0;       // Maximum length/width ratio
-criteria.enable_bridge_detection = true; // Detect and split narrow bridges
-criteria.enable_tooth_detection = true;  // Detect and split extensions
-
-auto custom_partitioned = partitioner.partition(1000.0, criteria);
-```
-
-#### Paths and Grids
-```cpp
-// Path with multiple waypoints
-Path path(waypoints);
-double total_length = path.length();
-Point interpolated = path.interpolate(0.5);  // 50% along path
-
-// 2D Regular grid for spatial data
-Grid<float> grid(rows, cols, cell_radius, centered, pose, reverse_y);
-Point grid_point = grid.get_point(row, col);
-float value = grid(row, col);
-grid.set_value_at_world(world_point, new_value);
-
-// 3D Layered grid (voxel-like structure)
-Layer<double> layer(rows, cols, layers, cell_radius, layer_height, centered, pose);
-Point layer_point = layer.get_point(row, col, layer_idx);
-double value = layer(row, col, layer_idx);
-layer.set_value_at_world(world_point, new_value);
-
-// Extract 2D slice from 3D layer
-Grid<double> slice = layer.extract_grid(layer_idx);
-
-// Layer operations
-auto layer_data = layer.layer(layer_idx);  // Get all data for a layer
-auto row_data = layer.row(row, layer_idx); // Get row within a layer
-auto corners = layer.corners();             // Get 8 corner points
-```
-
-### Bounding Volumes
-
-#### Axis-Aligned Bounding Box (AABB)
-```cpp
-AABB bbox(min_point, max_point);
-bool overlaps = bbox.intersects(other_bbox);
-AABB expanded = bbox.expand(margin);
-```
-
-#### Oriented Bounding Box (OBB)
-```cpp
-OBB obb(center, extents, rotation);
-bool contains = obb.contains(point);
-```
-
----
-
-## Spatial Algorithms
-
-### Distance Calculations
-
-```cpp
-// Various distance metrics
-double euclidean = spatial::distance(point1, point2);
-double distance_2d = spatial::distance2D(point1, point2);
-double squared = spatial::distanceSquared(point1, point2);
-
-// Point-to-geometry distances
-double line_dist = spatial::distanceToLine(point, line);
-double polygon_dist = spatial::distanceToPolygon(point, polygon);
-```
-
-### Intersection Detection
-
-```cpp
-// Line-line intersection
-Point intersection;
-bool intersects = spatial::lineIntersection(line1, line2, intersection);
-
-// Circle-circle intersection
-auto intersections = spatial::circleIntersection(circle1, circle2);
-
-// Polygon operations
-bool overlaps = spatial::polygonIntersection(poly1, poly2);
-```
-
-### Convex Hull
-
-```cpp
-std::vector<Point> points = {/* your points */};
-Polygon hull = spatial::convexHull(points);
-```
-
-### Clustering
-
-```cpp
-// K-means clustering
-auto clusters = spatial::kmeans(points, k_clusters);
-
-// DBSCAN clustering
-auto dense_clusters = spatial::dbscan(points, epsilon, min_points);
-```
-
----
-
-## Spatial Indexing
-
-### Hash Grid
-
-```cpp
-SpatialHashGrid<int> grid(cell_size);
-
-// Insert points with associated data
-grid.insert(point1, data1);
-grid.insert(point2, data2);
-
-// Query nearby points
-auto nearby = grid.query(query_point, search_radius);
-```
-
-### R-Tree
-
-```cpp
-RTree<Point> rtree;
-rtree.insert(point1);
-rtree.insert(point2);
-
-// Range query
-auto results = rtree.search(bounding_box);
-
-// Nearest neighbor
-auto nearest = rtree.nearest(query_point, k=5);
-```
-
-### QuadTree
-
-```cpp
-QuadTree qtree(boundary, max_capacity);
-qtree.insert(point);
-
-auto points_in_region = qtree.query(search_area);
-```
-
----
-
-## Utilities
-
-### Random Generation
-
-```cpp
-utils::RandomPointGenerator generator(seed);
-
-// Generate random points in shapes
-Point random_in_circle = generator.randomPointInCircle(center, radius);
-Point random_in_polygon = generator.randomPointInPolygon(polygon);
-auto random_points = generator.randomPointsInBounds(bbox, count);
-```
-
-### Statistics
-
-```cpp
-// Statistical analysis of point sets
-auto stats = utils::calculateStatistics(points);
-Point centroid = stats.centroid;
-double std_dev = stats.standard_deviation;
-AABB bounds = stats.bounding_box;
-
-// Outlier detection
-auto outliers = utils::detectOutliers(points, threshold);
-```
-
-### Validation
-
-```cpp
-// Coordinate validation
-validation::validate_latitude(lat);   // Throws if invalid
-validation::validate_longitude(lon);
-validation::validate_altitude(alt, min_alt, max_alt);
-
-// Geometry validation
-bool valid_polygon = validation::isValidPolygon(polygon);
-bool simple_polygon = validation::isSimplePolygon(polygon);
-```
-
-### Unit Conversions
-
-```cpp
-// Distance conversions
-double meters = utils::feet_to_meters(feet);
-double km = utils::meters_to_kilometers(meters);
-double miles = utils::meters_to_miles(meters);
-
-// Angle conversions
-double radians = utils::degrees_to_radians(degrees);
-double degrees = utils::radians_to_degrees(radians);
-```
-
-### Interpolation
-
-```cpp
-// Linear interpolation
-double result = lerp(start, end, t);
-
-// Smooth interpolation
-double smooth = smoothstep(edge0, edge1, x);
-
-// Spherical interpolation
-WGS interpolated = slerp(wgs1, wgs2, t);
-```
-
----
-
-## Error Handling
-
-Concord uses a comprehensive exception system for error handling:
-
-```cpp
-try {
-    WGS invalid_point(91.0, 200.0, 0.0);  // Invalid coordinates
-} catch (const InvalidCoordinateException& e) {
-    std::cout << "Coordinate error: " << e.what() << std::endl;
-} catch (const ConcordException& e) {
-    std::cout << "General error: " << e.what() << std::endl;
-}
-```
-
-### Exception Types
-- `ConcordException`: Base exception class
-- `InvalidCoordinateException`: Invalid coordinate values
-- `ConversionException`: Coordinate conversion failures
-- `GeometryException`: Invalid geometric operations
-- `IndexException`: Spatial indexing errors
-
----
-
-## Performance Considerations
-
-### Optimization Tips
-
-1. **Use appropriate coordinate systems**: Choose the most suitable system for your use case
-2. **Leverage spatial indexing**: Use R-Trees or hash grids for large datasets
-3. **Batch operations**: Process multiple points together when possible
-4. **Avoid unnecessary conversions**: Cache converted coordinates when reusing
-
-### Memory Management
-
-```cpp
-// Efficient point storage
-std::vector<Point> points;
-points.reserve(expected_size);  // Pre-allocate memory
-
-// Use spatial indexes for large datasets
-SpatialHashGrid<size_t> index(optimal_cell_size);
-```
-
----
-
-## Advanced Examples
-
-### Complete Workflow Example
-
-```cpp
-#include <concord/concord.hpp>
-using namespace concord;
-
-int main() {
-    try {
-        // 1. Create sample GPS waypoints
-        std::vector<WGS> waypoints = {
-            WGS{47.6062, -122.3321, 56.0},   // Seattle
-            WGS{47.6205, -122.3493, 45.0},   // Capitol Hill
-            WGS{47.6097, -122.3331, 60.0},   // First Hill
-            WGS{47.6151, -122.3394, 52.0},   // Belltown
-            WGS{47.6040, -122.3301, 58.0}    // Pioneer Square
-        };
-        
-        // 2. Convert to local ENU coordinates
-        WGS origin = waypoints[0];  // Use first point as origin
-        std::vector<Point> local_points;
-        
-        for (const auto& wp : waypoints) {
-            auto [x, y, z] = wgs_to_enu(wp.lat, wp.lon, wp.alt,
-                                        origin.lat, origin.lon, origin.alt);
-            local_points.emplace_back(ENU{x, y, z}, origin);
-        }
-        
-        // 3. Create spatial index for efficient queries
-        SpatialHashGrid<size_t> spatial_index(10.0);  // 10m grid cells
-        for (size_t i = 0; i < local_points.size(); ++i) {
-            spatial_index.insert(local_points[i], i);
-        }
-        
-        // 4. Find clusters of nearby points
-        auto clusters = spatial::dbscan(local_points, 50.0, 3);  // 50m radius, min 3 points
-        
-        // 5. Create convex hull for each cluster
-        for (const auto& cluster : clusters) {
-            std::vector<Point> cluster_points;
-            for (size_t idx : cluster) {
-                cluster_points.push_back(local_points[idx]);
-            }
-            
-            Polygon hull = spatial::convexHull(cluster_points);
-            
-            // 6. Print hull vertices
-            std::cout << "Convex hull with " << hull.vertices.size() << " vertices" << std::endl;
-        }
-        
-        // 7. Generate statistics
-        auto stats = utils::calculateStatistics(local_points);
-        std::cout << "Centroid: " << stats.centroid.enu.x 
-                  << ", " << stats.centroid.enu.y << std::endl;
-        
-    } catch (const ConcordException& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
-    }
-    
-    return 0;
-}
-```
-
-### Spatial Data Processing
-
-```cpp
-// Process spatial data and perform analysis
-void processSpatialData() {
-    std::vector<Point> all_points;
-    
-    // Create sample coordinate data
-    WGS origin(37.422000, -122.084000, 0.0);
-    
-    // Add some specific points
-    all_points.emplace_back(ENU{10.0, 20.0, 5.0}, origin);
-    all_points.emplace_back(ENU{30.0, 40.0, 8.0}, origin);
-    all_points.emplace_back(ENU{50.0, 60.0, 12.0}, origin);
-    
-    // Generate random test data
-    utils::RandomPointGenerator generator;
-    AABB test_area(Point(ENU{0, 0, 0}, origin), Point(ENU{1000, 1000, 100}, origin));
-    auto random_points = generator.randomPointsInBounds(test_area, 100);
-    all_points.insert(all_points.end(), random_points.begin(), random_points.end());
-    
-    // Process the data
-    auto hull = spatial::convexHull(all_points);
-    auto stats = utils::calculateStatistics(all_points);
-    
-    std::cout << "Processed " << all_points.size() << " points" << std::endl;
-    std::cout << "Convex hull has " << hull.vertices.size() << " vertices" << std::endl;
-    std::cout << "Centroid: (" << stats.centroid.enu.x << ", " << stats.centroid.enu.y << ")" << std::endl;
-}
-}
-```
-
----
-
-## Library Architecture
-
-### Core Components
-
-- **`concord::core`**: Basic types and coordinate conversions
-- **`concord::math`**: Mathematical primitives and operations
-- **`concord::geometry`**: Geometric shapes and algorithms
-- **`concord::spatial`**: Spatial algorithms and data structures
-- **`concord::utils`**: Utility functions and helpers
-- **`concord::validation`**: Data validation and error checking
-
-### Dependencies
-
-Concord is designed to be lightweight with minimal external dependencies:
-- **Standard C++17**: Core language features
-- **Standard Library**: Mathematical functions, containers
-
----
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Development Setup
-
-```bash
-git clone https://github.com/bresilla/concord.git
-cd concord
-./run.sh b  # Build the project
-./run.sh r  # Run tests
-```
-
----
+## Features
+
+- **Frame Tags & Compile-Time Safety** - `FrameTag::LocalTangent`, `Body`, `Geocentric`
+  ```cpp
+  static_assert(ENU::tag == FrameTag::LocalTangent);
+  static_assert(FRD::tag == FrameTag::Body);
+  ```
+
+- **Semantic Accessors** - Self-documenting code for robotics
+  ```cpp
+  enu.east(), enu.north(), enu.up()
+  ned.north(), ned.east(), ned.down()
+  frd.forward(), frd.right(), frd.down()  // Aerospace (PX4)
+  flu.forward(), flu.left(), flu.up()     // ROS convention
+  ```
+
+- **frame_cast<To>(from)** - Zero-cost axis shuffling between co-located frames
+  ```cpp
+  NED ned = frame_cast<NED>(enu);  // Just shuffles axes, preserves origin
+  FLU flu = frame_cast<FLU>(frd);  // Aerospace → ROS convention
+  ```
+
+- **Transform Composition** - Build TF trees naturally
+  ```cpp
+  auto T_AC = T_AB * T_BC;           // Compose transforms
+  auto T_BA = T_AB.inverse();        // Invert transform
+  auto p_world = T_world_body * p;   // Transform points
+  ```
+
+- **Unit Conversion** - Degrees or radians, your choice
+  ```cpp
+  wgs.latitude;                           // degrees (default)
+  wgs.lat_rad();                          // radians
+  auto pos = earth::WGS::from_radians(lat_rad, lon_rad, alt);
+  ```
+
+- **Stream Output** - Debug-friendly printing
+  ```cpp
+  std::cout << wgs;  // WGS{lat=48.86deg, lon=2.35deg, alt=35m}
+  std::cout << enu;  // ENU{e=10, n=20, u=5 @(48.86,2.35)}
+  std::cout << tf;   // Transform{Rotation{q=[1,0,0,0]}, t=[10,5,0]}
+  ```
+
+- **Rotation Factories** - Multiple ways to create rotations
+  ```cpp
+  auto r1 = Rotation<A,B>::from_euler_zyx(yaw, pitch, roll);
+  auto r2 = Rotation<A,B>::from_axis_angle(axis, angle);
+  auto r3 = Rotation<A,B>::from_matrix(R);
+  auto r4 = Rotation<A,B>::identity();
+  ```
+
+- **Spline Interpolation** - C1-smooth trajectories through transforms
+  ```cpp
+  TimedTransformSpline<World, Body> spline;
+  spline.add_point(t1, tf1);
+  spline.add_point(t2, tf2);
+  spline.build();
+  auto tf = spline.evaluate_at(query_time);
+  ```
+
+## API Reference
+
+### Earth Realm (`concord::earth`)
+
+| Type | Base | Description |
+|------|------|-------------|
+| `WGS` | `dp::Geo` | WGS84 geodetic (lat/lon/alt) |
+| `ECF` | `dp::Point` | Earth-Centered Fixed (ECEF) |
+| `UTM` | `dp::Utm` | Universal Transverse Mercator |
+
+### Frame Realm (`concord::frame`)
+
+| Type | Base | Description |
+|------|------|-------------|
+| `ENU` | `dp::Loc` | East-North-Up (carries origin!) |
+| `NED` | `dp::Loc` | North-East-Down (carries origin!) |
+| `FRD` | `dp::Point` | Forward-Right-Down (body, PX4) |
+| `FLU` | `dp::Point` | Forward-Left-Up (body, ROS) |
+| `Transform<To,From>` | - | SE(3) rigid body transform |
+| `Rotation<To,From>` | - | SO(3) rotation |
+
+### Transform Realm (`concord::transform`)
+
+| Type | Description |
+|------|-------------|
+| `FrameGraph` | Graph storing frames and transforms |
+| `TransformTree` | High-level tree with BFS path finding |
+| `TimedTransformTree` | Temporal transforms with interpolation |
+| `TimedTransformBuffer` | Circular buffer for transform history |
+| `GenericTransform` | Type-erased transform for runtime composition |
+
+### Key Functions
+
+| Function | Description |
+|----------|-------------|
+| `earth::to_ecf(WGS)` | WGS84 → ECEF |
+| `earth::to_wgs(ECF)` | ECEF → WGS84 |
+| `earth::to_utm(WGS)` | WGS84 → UTM (returns `dp::Result`) |
+| `frame::to_enu(ref, WGS)` | WGS84 → local ENU with origin |
+| `frame::to_ned(ref, WGS)` | WGS84 → local NED with origin |
+| `frame::to_wgs(ENU/NED)` | Local → WGS84 (self-contained!) |
+| `frame::frame_cast<To>(from)` | Zero-cost axis shuffle |
+| `earth::batch_to_enu(ref, span)` | SIMD batch conversion |
+
+### Lie Group Functions (`concord::frame`)
+
+| Function | Description |
+|----------|-------------|
+| `exp<To,From>(omega)` | Tangent → Rotation (exponential map) |
+| `log(rotation)` | Rotation → Tangent (logarithmic map) |
+| `slerp(r1, r2, t)` | Spherical linear interpolation |
+| `interpolate(tf1, tf2, t)` | Geodesic interpolation for SE(3) |
+| `average(span<Rotation>)` | Karcher/Frechet mean |
+| `left_jacobian_so3(omega)` | Left Jacobian for optimization |
+
+## Examples
+
+See the `examples/` directory:
+- `datapod_interop_example.cpp` - dp::Loc/Geo/Utm interoperability
+- `convert_builder_example.cpp` - Fluent API with self-contained ENU
+- `robot_frame_tree.cpp` - Transform tree with path finding
+- `wgs_to_enu_example.cpp` - GPS to local frame conversion
+- `wgs_to_utm_example.cpp` - UTM projection for mapping
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](./LICENSE) for details.
 
----
+## Acknowledgments
 
-## Citation
-
-If you use Concord in your research, please cite:
-
-```bibtex
-@software{concord2024,
-  title={Concord: A Comprehensive C++ Geodetic Coordinate Library},
-  author={Bresilla and Contributors},
-  year={2024},
-  url={https://github.com/bresilla/concord}
-}
-```
-
----
-
-## Changelog
-
-### Version 2.1.0 (Latest) - Major Architecture Restructure
-
-🏗️ **Complete Architecture Overhaul**
-- **NEW**: Modular directory structure with logical component separation
-- **NEW**: Builder pattern for fluent coordinate transformations
-- **NEW**: Enhanced spatial indexing with R-Tree, QuadTree, and Hash Grid
-- **MOVED**: `math/` and `errors/` into `core/` for better organization
-- **RESTRUCTURED**: `spatial/` → `algorithms/` with a unified algorithms header (`algorithms.hpp`)
-- **ORGANIZED**: Geometry primitives into dedicated `primitives/` folder
-- **ADDED**: Geographic transformations and projections framework
-- **ENHANCED**: Comprehensive spatial algorithms suite
-
-🚀 **Performance & Features**
-- **NEW**: Fluent API: `convert(point).withDatum(datum).asENU().toWGS()`
-- **NEW**: Advanced polygon partitioning algorithms
-- **NEW**: Multiple triangulation algorithms (Delaunay, Ear Clipping)
-- **NEW**: Convex hull algorithms (Graham Scan, QuickHull, Gift Wrapping)
-- **IMPROVED**: Distance calculation algorithms with specialized methods
-- **OPTIMIZED**: Spatial indexing for faster queries
-
-🔧 **Developer Experience**
-- **CLEAN**: All include paths updated for new structure
-- **CONSISTENT**: Unified namespace organization
-- **COMPREHENSIVE**: Complete test coverage for all components
-- **MODERN**: C++20 features and best practices
-
-### Previous Versions
-
-- **2.0.0**: Initial release with coordinate systems and basic spatial operations
-- **1.x.x**: Legacy versions (deprecated)
-
----
-
-## Support
-
-- **Documentation**: [Full API Reference](https://bresilla.github.io/concord/)
-- **Issues**: [GitHub Issues](https://github.com/bresilla/concord/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/bresilla/concord/discussions)
+- **datapod** - POD types backend (dp::Loc, dp::Geo, dp::Utm, dp::Point, dp::Quaternion)
+- **optinum** - SIMD operations and Lie group math
+- **graphix** - Graph algorithms for transform tree path finding
