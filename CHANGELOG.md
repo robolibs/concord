@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.6] - 2026-01-03
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Update dependencies and type aliases
+
 ## [0.0.5] - 2025-12-31
 
 ### <!-- 7 -->⚙️ Miscellaneous Tasks

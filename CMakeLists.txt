@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 # Project configuration
 # ==================================================================================================
 set(PROJECT_NAME concord)
-set(PROJECT_VERSION "0.0.5")
+set(PROJECT_VERSION "0.0.6")
 
 # Dependencies formats:
 #   Git:    set(LIB_DEPS "name|https://github.com/org/repo.git|tag" ...)
