@@ -14,8 +14,8 @@ namespace concord::earth {
     // Type aliases
     // Both Matrix and Vector use datapod types (own their data)
     // Use optinum::simd::Matrix as a view when needed for matmul
-    using Matrix3d = dp::mat::matrix<double, 3, 3>;
-    using Vector3d = dp::mat::vector<double, 3>;
+    using Matrix3d = dp::mat::Matrix<double, 3, 3>;
+    using Vector3d = dp::mat::Vector<double, 3>;
 
     /**
      * @brief Rotation matrix from ECEF to ENU frame

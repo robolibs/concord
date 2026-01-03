@@ -20,7 +20,7 @@ namespace concord::frame {
         explicit Rotation(const dp::Quaternion &quat) : q(quat.normalized()) {}
 
         // From rotation matrix
-        static Rotation from_matrix(const dp::mat::matrix3x3d &R) {
+        static Rotation from_matrix(const dp::mat::Matrix3x3d &R) {
             dp::Quaternion quat;
             const T trace = R(0, 0) + R(1, 1) + R(2, 2);
 
@@ -82,8 +82,8 @@ namespace concord::frame {
         }
 
         // Convert to rotation matrix
-        dp::mat::matrix3x3d to_matrix() const {
-            dp::mat::matrix3x3d R{};
+        dp::mat::Matrix3x3d to_matrix() const {
+            dp::mat::Matrix3x3d R{};
             const T w = q.w, x = q.x, y = q.y, z = q.z;
             const T xx = x * x, yy = y * y, zz = z * z;
             const T xy = x * y, xz = x * z, yz = y * z;
@@ -139,7 +139,7 @@ namespace concord::frame {
         }
 
         // From rotation matrix and translation
-        static Transform from_Rt(const dp::mat::matrix3x3d &R, const dp::Point &t) {
+        static Transform from_Rt(const dp::mat::Matrix3x3d &R, const dp::Point &t) {
             return Transform{Rotation<ToFrame, FromFrame, T>::from_matrix(R), t};
         }
 
@@ -157,7 +157,7 @@ namespace concord::frame {
         dp::Point apply(const dp::Point &p_from) const { return rotation.apply(p_from) + translation; }
 
         // Get rotation matrix
-        dp::mat::matrix3x3d rotation_matrix() const { return rotation.to_matrix(); }
+        dp::mat::Matrix3x3d rotation_matrix() const { return rotation.to_matrix(); }
     };
 
     // Transform composition: T_AC = T_AB * T_BC

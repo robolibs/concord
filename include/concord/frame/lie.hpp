@@ -32,10 +32,10 @@ namespace concord::frame {
     // ============================================================================
 
     /// Tangent vector for SO(3) - rotation vector (axis-angle)
-    using RotationTangent = dp::mat::vector<double, 3>;
+    using RotationTangent = dp::mat::Vector<double, 3>;
 
     /// Tangent vector for SE(3) - twist [v, omega] where v is translational, omega is rotational
-    using TransformTangent = dp::mat::vector<double, 6>;
+    using TransformTangent = dp::mat::Vector<double, 6>;
 
     // ============================================================================
     // Conversion helpers (zero-copy where possible)

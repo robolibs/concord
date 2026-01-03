@@ -99,7 +99,7 @@ namespace concord::earth {
      * @return WGS84 coordinates (latitude, longitude in degrees, altitude in meters)
      */
     inline WGS to_wgs_optimized(const ECF &ecf, double tolerance = 1e-12) {
-        using Vec3 = datapod::mat::vector<double, 3>;
+        using Vec3 = datapod::mat::Vector<double, 3>;
 
         const double x = ecf.x;
         const double y = ecf.y;
