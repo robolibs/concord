@@ -273,6 +273,118 @@
       "last_modified": "2023-02-24T09:01:09Z",
       "resolved": "github:NixOS/nixpkgs/7d0ed7f2e5aea07ab22ccb338d27fbe347ed2f11#stdenv",
       "source": "devbox-search"
+    },
+    "xmake@latest": {
+      "last_modified": "2025-12-22T13:40:18Z",
+      "resolved": "github:NixOS/nixpkgs/3a7affa77a5a539afa1c7859e2c31abdb1aeadf3#xmake",
+      "source": "devbox-search",
+      "version": "3.0.5",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/9qnfxj9g17mr4897hcj21zv3nq0gz23d-xmake-3.0.5",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/9qnfxj9g17mr4897hcj21zv3nq0gz23d-xmake-3.0.5"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/a7jgrvz0irkp014r6h854ls11kbl3hhf-xmake-3.0.5",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/a7jgrvz0irkp014r6h854ls11kbl3hhf-xmake-3.0.5"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/n1ac38xb68rh022zgd7gkrlsyl3zvkm3-xmake-3.0.5",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/n1ac38xb68rh022zgd7gkrlsyl3zvkm3-xmake-3.0.5"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/l0wrgnzlrynikjvhd1vy0h77jsc0lzac-xmake-3.0.5",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/l0wrgnzlrynikjvhd1vy0h77jsc0lzac-xmake-3.0.5"
+        }
+      }
+    },
+    "zig@latest": {
+      "last_modified": "2025-11-23T21:50:36Z",
+      "resolved": "github:NixOS/nixpkgs/ee09932cedcef15aaf476f9343d1dea2cb77e261#zig",
+      "source": "devbox-search",
+      "version": "0.15.2",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/h5zqw1lr8i0pwqpkkl3lbid06f9dprw0-zig-0.15.2",
+              "default": true
+            },
+            {
+              "name": "doc",
+              "path": "/nix/store/pkr2y19zac7gls2mr5fjwkxr9kbj632h-zig-0.15.2-doc"
+            }
+          ],
+          "store_path": "/nix/store/h5zqw1lr8i0pwqpkkl3lbid06f9dprw0-zig-0.15.2"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/qn6da3g7qdwdxd2csdm1aj25zilkcl30-zig-0.15.2",
+              "default": true
+            },
+            {
+              "name": "doc",
+              "path": "/nix/store/j22h1s5gc972wvsqzqj0m5vzrcqkd676-zig-0.15.2-doc"
+            }
+          ],
+          "store_path": "/nix/store/qn6da3g7qdwdxd2csdm1aj25zilkcl30-zig-0.15.2"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/fqhwfl5pyh3359naslzswsaw9ng51gly-zig-0.15.2",
+              "default": true
+            },
+            {
+              "name": "doc",
+              "path": "/nix/store/jipcmr5blz3nxwncl1lxy5cvsfiq8w40-zig-0.15.2-doc"
+            }
+          ],
+          "store_path": "/nix/store/fqhwfl5pyh3359naslzswsaw9ng51gly-zig-0.15.2"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/iyv5lnq9cwlsixg357zv8zcp4pv2q7ml-zig-0.15.2",
+              "default": true
+            },
+            {
+              "name": "doc",
+              "path": "/nix/store/vssw4zdhhvjlgmjkxwws8q8vz7fyxd92-zig-0.15.2-doc"
+            }
+          ],
+          "store_path": "/nix/store/iyv5lnq9cwlsixg357zv8zcp4pv2q7ml-zig-0.15.2"
+        }
+      }
     }
   }
 }

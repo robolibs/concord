@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <cmath>
 #include <datapod/datapod.hpp>
-#include <datapod/temporal/stamp.hpp>
-#include <datapod/temporal/time_series.hpp>
 #include <graphix/vertex/algorithms/bfs.hpp>
 #include <limits>
 #include <optional>

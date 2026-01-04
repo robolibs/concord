@@ -11,9 +11,9 @@ set(PROJECT_VERSION "0.0.6")
 #   Find:   set(LIB_DEPS "name" ...)  # Uses find_package
 #   Pkg:    set(LIB_DEPS "pkg::name" ...)  # Uses pkg-config
 set(LIB_DEPS
-    "datapod|https://github.com/robolibs/datapod.git|0.0.22"
-    "optinum|https://github.com/robolibs/optinum.git|0.0.15"
-    "graphix|https://github.com/robolibs/graphix.git|0.0.5"
+    "datapod|https://github.com/robolibs/datapod.git|0.0.29"
+    "optinum|https://github.com/robolibs/optinum.git|0.0.16"
+    "graphix|https://github.com/robolibs/graphix.git|0.0.6"
 )
 set(EXAMPLE_DEPS
     "pkg::rerun_sdk"

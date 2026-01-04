@@ -4,7 +4,7 @@
 #include "wgs84.hpp"
 #include <cmath>
 
-#include <datapod/matrix/vector.hpp>
+#include <datapod/datapod.hpp>
 #include <optinum/opti/quasi_newton/gauss_newton.hpp>
 
 namespace concord::earth {
