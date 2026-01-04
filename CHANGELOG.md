@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.7] - 2026-01-04
+
+### <!-- 1 -->🐛 Bug Fixes
+
+- Update dependencies and add devbox tools
+
 ## [0.0.6] - 2026-01-03
 
 ### <!-- 7 -->⚙️ Miscellaneous Tasks

@@ -1,8 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include <datapod/matrix/matrix.hpp>
-#include <datapod/matrix/vector.hpp>
+#include <datapod/datapod.hpp>
 #include <optinum/simd/matrix.hpp>
 
 #include "wgs84.hpp"
