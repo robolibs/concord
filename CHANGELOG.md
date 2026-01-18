@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.9] - 2026-01-18
+
+### Build
+
+- Improve dependency logging output
+
 ## [0.0.8] - 2026-01-18
 
 ### <!-- 7 -->⚙️ Miscellaneous Tasks
