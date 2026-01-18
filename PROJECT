@@ -1,0 +1,33 @@
+# ==============================================================================
+# PROJECT file - Project configuration
+# ==============================================================================
+# Format:
+#   Line 1: Project name (first non-comment, non-section line)
+#   Line 2: Project version (second non-comment, non-section line)
+#
+# Dependency sections:
+#   [lib]     - Library dependencies (linked to main library)
+#   [example] - Example-only dependencies
+#   [test]    - Test-only dependencies
+#
+# Dependency formats:
+#   Git:  name|https://github.com/org/repo.git|tag
+#   Find: name                                       (uses find_package)
+#   Pkg:  pkg::name                                  (uses pkg-config)
+#
+# Lines starting with # are comments
+# ==============================================================================
+
+concord
+0.0.7
+
+[lib]
+datapod|https://github.com/robolibs/datapod.git|0.0.41
+optinum|https://github.com/robolibs/optinum.git|0.0.18
+graphix|https://github.com/robolibs/graphix.git|0.0.7
+
+[example]
+pkg::rerun_sdk
+
+[test]
+doctest|https://github.com/doctest/doctest.git|v2.4.12

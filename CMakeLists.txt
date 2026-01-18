@@ -1,26 +1,36 @@
 cmake_minimum_required(VERSION 3.15)
 
 # ==================================================================================================
-# Project configuration
+# Parse PROJECT file
 # ==================================================================================================
-set(PROJECT_NAME concord)
-set(PROJECT_VERSION "0.0.7")
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/PROJECT" _project_lines)
+set(_line_idx 0)
+set(_section "")
+set(LIB_DEPS)
+set(EXAMPLE_DEPS)
+set(TEST_DEPS)
 
-# Dependencies formats:
-#   Git:    set(LIB_DEPS "name|https://github.com/org/repo.git|tag" ...)
-#   Find:   set(LIB_DEPS "name" ...)  # Uses find_package
-#   Pkg:    set(LIB_DEPS "pkg::name" ...)  # Uses pkg-config
-set(LIB_DEPS
-    "datapod|https://github.com/robolibs/datapod.git|0.0.29"
-    "optinum|https://github.com/robolibs/optinum.git|0.0.16"
-    "graphix|https://github.com/robolibs/graphix.git|0.0.6"
-)
-set(EXAMPLE_DEPS
-    "pkg::rerun_sdk"
-)
-set(TEST_DEPS
-    "doctest|https://github.com/doctest/doctest.git|v2.4.12"
-)
+foreach(_line IN LISTS _project_lines)
+    string(STRIP "${_line}" _line)
+    if("${_line}" STREQUAL "" OR "${_line}" MATCHES "^#")
+        continue()
+    elseif("${_line}" MATCHES "^\\[(.+)\\]$")
+        set(_section "${CMAKE_MATCH_1}")
+    elseif(_line_idx LESS 2)
+        if(_line_idx EQUAL 0)
+            set(PROJECT_NAME "${_line}")
+        else()
+            set(PROJECT_VERSION "${_line}")
+        endif()
+        math(EXPR _line_idx "${_line_idx} + 1")
+    elseif("${_section}" STREQUAL "lib")
+        list(APPEND LIB_DEPS "${_line}")
+    elseif("${_section}" STREQUAL "example")
+        list(APPEND EXAMPLE_DEPS "${_line}")
+    elseif("${_section}" STREQUAL "test")
+        list(APPEND TEST_DEPS "${_line}")
+    endif()
+endforeach()
 
 # ==================================================================================================
 # Compiler selection (must be before project())
@@ -34,7 +44,6 @@ if(COMPILER STREQUAL "clang")
     if(CLANG_C_COMPILER AND CLANG_CXX_COMPILER)
         set(CMAKE_C_COMPILER ${CLANG_C_COMPILER})
         set(CMAKE_CXX_COMPILER ${CLANG_CXX_COMPILER})
-        message(STATUS "Using Clang compiler: ${CLANG_CXX_COMPILER}")
     else()
         message(FATAL_ERROR "Clang compiler not found")
     endif()
@@ -44,7 +53,6 @@ elseif(COMPILER STREQUAL "gcc")
     if(GCC_C_COMPILER AND GCC_CXX_COMPILER)
         set(CMAKE_C_COMPILER ${GCC_C_COMPILER})
         set(CMAKE_CXX_COMPILER ${GCC_CXX_COMPILER})
-        message(STATUS "Using GCC compiler: ${GCC_CXX_COMPILER}")
     else()
         message(FATAL_ERROR "GCC compiler not found")
     endif()
@@ -90,8 +98,7 @@ if(${PROJECT_NAME_UPPER}_ENABLE_SIMD)
     endif()
 else()
     # Define macro to disable SIMD in the code
-    add_compile_definitions(CONCORD_SIMD_DISABLED)
-    message(STATUS "SIMD optimizations disabled")
+    add_compile_definitions(${PROJECT_NAME_UPPER}_SIMD_DISABLED)
 endif()
 option(${PROJECT_NAME_UPPER}_BUILD_EXAMPLES "Build examples" OFF)
 option(${PROJECT_NAME_UPPER}_ENABLE_TESTS "Enable tests" OFF)
@@ -103,6 +110,10 @@ include(FetchContent)
 # ==================================================================================================
 # Helper function: process dependencies
 # ==================================================================================================
+string(ASCII 27 Esc)
+set(Green "${Esc}[32m")
+set(Reset "${Esc}[0m")
+
 function(process_deps dep_list out_targets)
     set(targets)
     foreach(dep IN LISTS ${dep_list})
@@ -118,21 +129,28 @@ function(process_deps dep_list out_targets)
             list(GET dep_parts 1 dep_url)
             list(GET dep_parts 2 dep_tag)
 
-            FetchContent_Declare(${dep_name}
-                GIT_REPOSITORY "${dep_url}"
-                GIT_TAG "${dep_tag}"
-            )
-            FetchContent_MakeAvailable(${dep_name})
+            # Check if already fetched (by a transitive dependency)
+            FetchContent_GetProperties(${dep_name})
+            if(NOT ${dep_name}_POPULATED)
+                FetchContent_Declare(${dep_name}
+                    GIT_REPOSITORY "${dep_url}"
+                    GIT_TAG "${dep_tag}"
+                )
+                FetchContent_MakeAvailable(${dep_name})
+                message(STATUS "${Green}${dep_name}${Reset} added")
+            endif()
             list(APPEND targets ${dep_name})
         elseif(is_pkg EQUAL 0)
             # pkg-config dependency: pkg::name
             string(SUBSTRING "${dep}" 5 -1 pkg_name)
             find_package(PkgConfig REQUIRED)
             pkg_check_modules(${pkg_name} REQUIRED IMPORTED_TARGET ${pkg_name})
+            message(STATUS "${Green}${pkg_name}${Reset} added")
             list(APPEND targets PkgConfig::${pkg_name})
         else()
             # Simple dependency - use find_package
             find_package(${dep} REQUIRED)
+            message(STATUS "${Green}${dep}${Reset} added")
             list(APPEND targets ${dep}::${dep})
         endif()
     endforeach()
