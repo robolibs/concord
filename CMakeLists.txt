@@ -137,7 +137,7 @@ function(process_deps dep_list out_targets)
                     GIT_TAG "${dep_tag}"
                 )
                 FetchContent_MakeAvailable(${dep_name})
-                message(STATUS "${Green}${dep_name}${Reset} added")
+                message(STATUS "${Green}${dep_name}${Reset} version ${dep_tag} added")
             endif()
             list(APPEND targets ${dep_name})
         elseif(is_pkg EQUAL 0)
