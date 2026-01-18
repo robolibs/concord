@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.8] - 2026-01-18
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Refactor project metadata and build system logic
+
 ## [0.0.7] - 2026-01-04
 
 ### <!-- 1 -->🐛 Bug Fixes
