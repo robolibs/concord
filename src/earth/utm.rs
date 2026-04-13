@@ -2,7 +2,8 @@ use crate::{
     core::{Error, Result},
     earth::{
         Utm, Wgs,
-        wgs84::{A_M, DEG_TO_RAD, E2, E4, E6, EP2, K0, RAD_TO_DEG},
+        types::wgs_from_radians,
+        wgs84::{A_M, DEG_TO_RAD, E2, E4, E6, EP2, K0},
     },
 };
 
@@ -67,13 +68,13 @@ pub fn to_utm(wgs: Wgs) -> Result<Utm> {
         northing += 10_000_000.0;
     }
 
-    Ok(Utm::new(
+    Ok(Utm {
         zone,
-        if is_north(wgs.latitude) { 'N' } else { 'S' },
+        band: if is_north(wgs.latitude) { 'N' } else { 'S' },
         easting,
         northing,
-        wgs.altitude,
-    ))
+        altitude: wgs.altitude,
+    })
 }
 
 pub fn to_wgs(utm: Utm) -> Result<Wgs> {
@@ -82,7 +83,7 @@ pub fn to_wgs(utm: Utm) -> Result<Wgs> {
     }
 
     let mut northing = utm.northing;
-    if !utm.is_north() {
+    if utm.band < 'N' {
         northing -= 10_000_000.0;
     }
 
@@ -128,5 +129,5 @@ pub fn to_wgs(utm: Utm) -> Result<Wgs> {
                 / 120.0)
             / cos_phi1;
 
-    Ok(Wgs::new(lat * RAD_TO_DEG, lon * RAD_TO_DEG, utm.altitude))
+    Ok(wgs_from_radians(lat, lon, utm.altitude))
 }

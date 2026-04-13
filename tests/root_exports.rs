@@ -1,4 +1,4 @@
-use glam::DVec3;
+use datapod::Point;
 
 use concord::{
     Ecf, Enu, FrameCast, Geo, Wgs, batch_to_ecf, batch_to_enu, batch_to_wgs_from_enu, convert,
@@ -66,7 +66,7 @@ fn root_re_exports_cover_spline_sampling_helpers() {
     let samples = sample_rotation_spline(&spline, 3);
     assert_eq!(samples.len(), 3);
 
-    let mid = samples[1].apply(DVec3::new(1.0, 0.0, 0.0));
+    let mid = samples[1].apply(Point::new(1.0, 0.0, 0.0));
     assert!(mid.x > 0.0);
     assert!(mid.y > 0.0);
 }

@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 
 use concord::{ListenableTimedTransformTree, ListenableTransformTree, Rotation, Transform};
 
@@ -13,7 +13,7 @@ struct Odom;
 struct BaseLink;
 
 fn make_translation<To, From>(x: f64, y: f64, z: f64) -> Transform<To, From> {
-    Transform::from_qt(DQuat::IDENTITY, DVec3::new(x, y, z))
+    Transform::from_qt(Quaternion::identity(), Point::new(x, y, z))
 }
 
 #[test]
@@ -24,7 +24,7 @@ fn listenable_transform_tree_callbacks_register_trigger_and_remove() {
 
     let count1 = Arc::new(AtomicUsize::new(0));
     let count2 = Arc::new(AtomicUsize::new(0));
-    let last = Arc::new(Mutex::new(DVec3::ZERO));
+    let last = Arc::new(Mutex::new(Point::new(0.0, 0.0, 0.0)));
 
     let c1 = Arc::clone(&count1);
     let last_t = Arc::clone(&last);
@@ -49,7 +49,7 @@ fn listenable_transform_tree_callbacks_register_trigger_and_remove() {
     );
     assert_eq!(count1.load(Ordering::SeqCst), 1);
     assert_eq!(count2.load(Ordering::SeqCst), 1);
-    assert_eq!(*last.lock().expect("mutex"), DVec3::new(1.0, 2.0, 3.0));
+    assert_eq!(*last.lock().expect("mutex"), Point::new(1.0, 2.0, 3.0));
 
     tree.remove_listener(id1);
     assert_eq!(tree.edge_listener_count(), 1);
@@ -150,7 +150,7 @@ fn listenable_timed_transform_tree_dynamic_and_static_callbacks_work() {
     tree.register_frame::<Odom>("odom");
 
     let count = Arc::new(AtomicUsize::new(0));
-    let last = Arc::new(Mutex::new(DVec3::ZERO));
+    let last = Arc::new(Mutex::new(Point::new(0.0, 0.0, 0.0)));
     let count_c = Arc::clone(&count);
     let last_c = Arc::clone(&last);
     tree.on_update("world", "odom", move |tf| {
@@ -165,7 +165,7 @@ fn listenable_timed_transform_tree_dynamic_and_static_callbacks_work() {
         1.0,
     );
     assert_eq!(count.load(Ordering::SeqCst), 1);
-    assert_eq!(*last.lock().expect("mutex"), DVec3::new(1.0, 2.0, 3.0));
+    assert_eq!(*last.lock().expect("mutex"), Point::new(1.0, 2.0, 3.0));
 
     tree.set_static_transform(
         "world",
@@ -173,13 +173,13 @@ fn listenable_timed_transform_tree_dynamic_and_static_callbacks_work() {
         make_translation::<World, Odom>(5.0, 6.0, 7.0),
     );
     assert_eq!(count.load(Ordering::SeqCst), 2);
-    assert_eq!(*last.lock().expect("mutex"), DVec3::new(5.0, 6.0, 7.0));
+    assert_eq!(*last.lock().expect("mutex"), Point::new(5.0, 6.0, 7.0));
 
     let rot = Rotation::<World, Odom>::from_euler_zyx(std::f64::consts::FRAC_PI_4, 0.0, 0.0);
     tree.set_static_transform(
         "world",
         "odom",
-        Transform::new(rot, DVec3::new(1.0, 2.0, 3.0)),
+        Transform::new(rot, Point::new(1.0, 2.0, 3.0)),
     );
     assert_eq!(count.load(Ordering::SeqCst), 3);
 }

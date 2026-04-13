@@ -1,11 +1,11 @@
-use glam::DVec3;
+use datapod::Point;
 
 use crate::earth::Geo;
 use crate::frame::tags::{FrameTag, FrameTraits};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Enu {
-    pub local: DVec3,
+    pub local: Point,
     pub origin: Geo,
 }
 
@@ -15,7 +15,7 @@ impl Enu {
 
     pub fn new(east: f64, north: f64, up: f64, origin: Geo) -> Self {
         Self {
-            local: DVec3::new(east, north, up),
+            local: Point::new(east, north, up),
             origin,
         }
     }
@@ -44,7 +44,7 @@ impl Enu {
         self.local.z
     }
 
-    pub fn point(self) -> DVec3 {
+    pub fn point(self) -> Point {
         self.local
     }
 
@@ -53,11 +53,11 @@ impl Enu {
     }
 
     pub fn distance_from_origin(self) -> f64 {
-        self.local.length()
+        self.local.magnitude()
     }
 
     pub fn distance_from_origin_2d(self) -> f64 {
-        self.local.truncate().length()
+        (self.local.x * self.local.x + self.local.y * self.local.y).sqrt()
     }
 
     pub fn same_origin(self, other: Self) -> bool {
@@ -65,11 +65,11 @@ impl Enu {
     }
 
     pub fn distance_to(self, other: Self) -> f64 {
-        (self.local - other.local).length()
+        self.local.distance_to(other.local)
     }
 
     pub fn distance_to_2d(self, other: Self) -> f64 {
-        (self.local.truncate() - other.local.truncate()).length()
+        self.local.distance_to_2d(other.local)
     }
 }
 
@@ -80,7 +80,7 @@ impl FrameTraits for Enu {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Ned {
-    pub local: DVec3,
+    pub local: Point,
     pub origin: Geo,
 }
 
@@ -90,7 +90,7 @@ impl Ned {
 
     pub fn new(north: f64, east: f64, down: f64, origin: Geo) -> Self {
         Self {
-            local: DVec3::new(north, east, down),
+            local: Point::new(north, east, down),
             origin,
         }
     }
@@ -119,7 +119,7 @@ impl Ned {
         self.local.z
     }
 
-    pub fn point(self) -> DVec3 {
+    pub fn point(self) -> Point {
         self.local
     }
 
@@ -128,11 +128,11 @@ impl Ned {
     }
 
     pub fn distance_from_origin(self) -> f64 {
-        self.local.length()
+        self.local.magnitude()
     }
 
     pub fn distance_from_origin_2d(self) -> f64 {
-        self.local.truncate().length()
+        (self.local.x * self.local.x + self.local.y * self.local.y).sqrt()
     }
 
     pub fn same_origin(self, other: Self) -> bool {
@@ -147,7 +147,7 @@ impl FrameTraits for Ned {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Frd {
-    pub local: DVec3,
+    pub local: Point,
 }
 
 impl Frd {
@@ -156,7 +156,7 @@ impl Frd {
 
     pub fn new(forward: f64, right: f64, down: f64) -> Self {
         Self {
-            local: DVec3::new(forward, right, down),
+            local: Point::new(forward, right, down),
         }
     }
 
@@ -184,12 +184,12 @@ impl Frd {
         self.local.z
     }
 
-    pub fn point(self) -> DVec3 {
+    pub fn point(self) -> Point {
         self.local
     }
 
     pub fn magnitude(self) -> f64 {
-        self.local.length()
+        self.local.magnitude()
     }
 }
 
@@ -200,7 +200,7 @@ impl FrameTraits for Frd {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Flu {
-    pub local: DVec3,
+    pub local: Point,
 }
 
 impl Flu {
@@ -209,7 +209,7 @@ impl Flu {
 
     pub fn new(forward: f64, left: f64, up: f64) -> Self {
         Self {
-            local: DVec3::new(forward, left, up),
+            local: Point::new(forward, left, up),
         }
     }
 
@@ -237,12 +237,12 @@ impl Flu {
         self.local.z
     }
 
-    pub fn point(self) -> DVec3 {
+    pub fn point(self) -> Point {
         self.local
     }
 
     pub fn magnitude(self) -> f64 {
-        self.local.length()
+        self.local.magnitude()
     }
 }
 

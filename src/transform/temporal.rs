@@ -1,18 +1,19 @@
 use std::collections::{HashMap, HashSet};
 
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 use graphix::vertex::VertexId;
 
 use crate::{
     frame::Transform,
+    math::quat_slerp,
     transform::{FrameGraph, FrameInfo, GenericTransform},
 };
 
-pub fn slerp(q0: DQuat, q1: DQuat, t: f64) -> DQuat {
-    q0.slerp(q1, t)
+pub fn slerp(q0: Quaternion, q1: Quaternion, t: f64) -> Quaternion {
+    quat_slerp(q0, q1, t)
 }
 
-pub fn lerp(p0: DVec3, p1: DVec3, t: f64) -> DVec3 {
+pub fn lerp(p0: Point, p1: Point, t: f64) -> Point {
     p0 + (p1 - p0) * t
 }
 

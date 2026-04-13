@@ -1,4 +1,4 @@
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 
 use concord::{
     Geo, TimedTransformTree, Transform, TransformTree, Wgs, convert,
@@ -61,16 +61,16 @@ fn example_transform_tree_lookup_works() {
     tree.set_transform(
         "world",
         "base",
-        Transform::<World, Base>::from_qt(DQuat::IDENTITY, DVec3::new(1.0, 2.0, 0.0)),
+        Transform::<World, Base>::from_qt(Quaternion::identity(), Point::new(1.0, 2.0, 0.0)),
     );
     tree.set_transform(
         "base",
         "camera",
-        Transform::<Base, Camera>::from_qt(DQuat::IDENTITY, DVec3::new(0.0, 0.0, 1.0)),
+        Transform::<Base, Camera>::from_qt(Quaternion::identity(), Point::new(0.0, 0.0, 1.0)),
     );
 
     let tf = tree.lookup("world", "camera").expect("path exists");
-    assert_eq!(tf.translation, DVec3::new(1.0, 2.0, 1.0));
+    assert_eq!(tf.translation, Point::new(1.0, 2.0, 1.0));
 }
 
 #[test]
@@ -82,18 +82,18 @@ fn example_timed_transform_lookup_works() {
     tree.set_transform(
         "world",
         "odom",
-        Transform::<World, Odom>::from_qt(DQuat::IDENTITY, DVec3::ZERO),
+        Transform::<World, Odom>::from_qt(Quaternion::identity(), Point::new(0.0, 0.0, 0.0)),
         1.0,
     );
     tree.set_transform(
         "world",
         "odom",
-        Transform::<World, Odom>::from_qt(DQuat::IDENTITY, DVec3::new(10.0, 0.0, 0.0)),
+        Transform::<World, Odom>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0)),
         2.0,
     );
 
     let tf = tree
         .lookup("world", "odom", 1.5)
         .expect("interpolated transform");
-    assert_eq!(tf.translation, DVec3::new(5.0, 0.0, 0.0));
+    assert_eq!(tf.translation, Point::new(5.0, 0.0, 0.0));
 }

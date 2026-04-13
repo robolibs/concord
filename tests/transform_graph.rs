@@ -1,4 +1,4 @@
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 
 use concord::{FrameGraph, GenericTransform, Transform};
 
@@ -12,7 +12,7 @@ struct BaseLink;
 struct Camera;
 
 fn make_translation<To, From>(x: f64, y: f64, z: f64) -> Transform<To, From> {
-    Transform::from_qt(DQuat::IDENTITY, DVec3::new(x, y, z))
+    Transform::from_qt(Quaternion::identity(), Point::new(x, y, z))
 }
 
 fn approx_eq(a: f64, b: f64, eps: f64) {
@@ -87,17 +87,17 @@ fn frame_graph_set_get_and_update_transform() {
 #[test]
 fn generic_transform_supports_identity_inverse_apply_and_compose() {
     let identity = GenericTransform::identity();
-    let point = DVec3::new(1.0, 2.0, 3.0);
+    let point = Point::new(1.0, 2.0, 3.0);
     assert_eq!(identity.apply(point), point);
 
-    let tf = GenericTransform::new(DQuat::IDENTITY, DVec3::new(5.0, 6.0, 7.0));
-    assert_eq!(tf.apply(DVec3::ZERO), DVec3::new(5.0, 6.0, 7.0));
+    let tf = GenericTransform::new(Quaternion::identity(), Point::new(5.0, 6.0, 7.0));
+    assert_eq!(tf.apply(Point::new(0.0, 0.0, 0.0)), Point::new(5.0, 6.0, 7.0));
     assert_eq!(tf.inverse().apply(tf.apply(point)), point);
 
-    let a = GenericTransform::new(DQuat::IDENTITY, DVec3::new(1.0, 0.0, 0.0));
-    let b = GenericTransform::new(DQuat::IDENTITY, DVec3::new(0.0, 2.0, 0.0));
+    let a = GenericTransform::new(Quaternion::identity(), Point::new(1.0, 0.0, 0.0));
+    let b = GenericTransform::new(Quaternion::identity(), Point::new(0.0, 2.0, 0.0));
     let c = a * b;
-    assert_eq!(c.translation, DVec3::new(1.0, 2.0, 0.0));
+    assert_eq!(c.translation, Point::new(1.0, 2.0, 0.0));
 }
 
 #[test]

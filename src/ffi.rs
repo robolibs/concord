@@ -2,8 +2,6 @@ use std::cell::RefCell;
 use std::ffi::{CStr, CString, c_char};
 use std::ptr;
 
-use glam::{DQuat, DVec3};
-
 use crate::{
     Ecf, Enu, Geo, Ned, Transform, TransformTree, Utm, Wgs, convert, enu_to_ned, ned_to_enu,
 };
@@ -90,24 +88,8 @@ impl From<ConcordGeo3> for Geo {
     }
 }
 
-impl From<ConcordGeo3> for Wgs {
-    fn from(value: ConcordGeo3) -> Self {
-        Self::new(value.latitude, value.longitude, value.altitude)
-    }
-}
-
 impl From<Geo> for ConcordGeo3 {
     fn from(value: Geo) -> Self {
-        Self {
-            latitude: value.latitude,
-            longitude: value.longitude,
-            altitude: value.altitude,
-        }
-    }
-}
-
-impl From<Wgs> for ConcordGeo3 {
-    fn from(value: Wgs) -> Self {
         Self {
             latitude: value.latitude,
             longitude: value.longitude,
@@ -150,13 +132,13 @@ impl TryFrom<ConcordUtm> for Utm {
     fn try_from(value: ConcordUtm) -> crate::Result<Self> {
         let band = char::from_u32(value.band)
             .ok_or_else(|| crate::Error::InvalidArgument("invalid UTM band codepoint".into()))?;
-        Ok(Self::new(
-            value.zone,
+        Ok(Self {
+            zone: value.zone,
             band,
-            value.easting,
-            value.northing,
-            value.altitude,
-        ))
+            easting: value.easting,
+            northing: value.northing,
+            altitude: value.altitude,
+        })
     }
 }
 
@@ -194,8 +176,8 @@ impl From<ConcordNedPoint> for Ned {
     }
 }
 
-impl From<DVec3> for ConcordVec3 {
-    fn from(value: DVec3) -> Self {
+impl From<datapod::Point> for ConcordVec3 {
+    fn from(value: datapod::Point) -> Self {
         Self {
             x: value.x,
             y: value.y,
@@ -204,14 +186,14 @@ impl From<DVec3> for ConcordVec3 {
     }
 }
 
-impl From<ConcordVec3> for DVec3 {
+impl From<ConcordVec3> for datapod::Point {
     fn from(value: ConcordVec3) -> Self {
         Self::new(value.x, value.y, value.z)
     }
 }
 
-impl From<DQuat> for ConcordQuat {
-    fn from(value: DQuat) -> Self {
+impl From<datapod::Quaternion> for ConcordQuat {
+    fn from(value: datapod::Quaternion) -> Self {
         Self {
             x: value.x,
             y: value.y,
@@ -221,9 +203,9 @@ impl From<DQuat> for ConcordQuat {
     }
 }
 
-impl From<ConcordQuat> for DQuat {
+impl From<ConcordQuat> for datapod::Quaternion {
     fn from(value: ConcordQuat) -> Self {
-        DQuat::from_xyzw(value.x, value.y, value.z, value.w).normalize()
+        datapod::Quaternion::new(value.w, value.x, value.y, value.z).normalized()
     }
 }
 

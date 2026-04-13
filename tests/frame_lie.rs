@@ -1,4 +1,4 @@
-use glam::DVec3;
+use datapod::{Point, Quaternion};
 
 use concord::frame::{
     Rotation, RotationTangent, Transform, TransformTangent, angle, average_rotation,
@@ -16,21 +16,21 @@ fn approx_eq(a: f64, b: f64, eps: f64) {
     assert!((a - b).abs() < eps, "left={a}, right={b}");
 }
 
-fn approx_vec(a: DVec3, b: DVec3, eps: f64) {
-    assert!((a - b).length() < eps, "left={a:?}, right={b:?}");
+fn approx_vec(a: Point, b: Point, eps: f64) {
+    assert!((a - b).magnitude() < eps, "left={a:?}, right={b:?}");
 }
 
 #[test]
 fn rotation_exp_log_and_roundtrips_work() {
     let omega = RotationTangent::new(0.0, 0.0, std::f64::consts::FRAC_PI_2);
     let rot = rotation_exp::<World, Body, f64>(omega);
-    let result = rot.apply(DVec3::new(1.0, 0.0, 0.0));
-    approx_vec(result, DVec3::new(0.0, 1.0, 0.0), 1e-10);
+    let result = rot.apply(Point::new(1.0, 0.0, 0.0));
+    approx_vec(result, Point::new(0.0, 1.0, 0.0), 1e-10);
 
     let identity = Rotation::<World, Body>::identity();
-    approx_vec(log_rotation(identity), DVec3::ZERO, 1e-10);
+    approx_vec(log_rotation(identity), Point::new(0.0, 0.0, 0.0), 1e-10);
 
-    let omega2 = DVec3::new(0.21, 0.35, 0.56);
+    let omega2 = Point::new(0.21, 0.35, 0.56);
     let back = log_rotation(rotation_exp::<World, Body, f64>(omega2));
     approx_vec(back, omega2, 1e-10);
 
@@ -47,7 +47,7 @@ fn transform_exp_log_and_interpolation_work() {
 
     let pure_translation: TransformTangent = [1.0, 2.0, 3.0, 0.0, 0.0, 0.0];
     let tf = transform_exp::<World, Body, f64>(pure_translation);
-    approx_vec(tf.apply(DVec3::ZERO), DVec3::new(1.0, 2.0, 3.0), 1e-10);
+    approx_vec(tf.apply(Point::new(0.0, 0.0, 0.0)), Point::new(1.0, 2.0, 3.0), 1e-10);
 
     let twist: TransformTangent = [0.5, -0.3, 0.7, 0.1, 0.2, 0.15];
     let back = log_transform(transform_exp::<World, Body, f64>(twist));
@@ -56,7 +56,7 @@ fn transform_exp_log_and_interpolation_work() {
     }
 
     let tf1 = Transform::<World, Body>::identity();
-    let tf2 = Transform::<World, Body>::from_qt(glam::DQuat::IDENTITY, DVec3::new(10.0, 0.0, 0.0));
+    let tf2 = Transform::<World, Body>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0));
     assert!(is_approx_transform(
         interpolate_transform(tf1, tf2, 0.0),
         tf1,
@@ -68,8 +68,8 @@ fn transform_exp_log_and_interpolation_work() {
         1e-10
     ));
     approx_vec(
-        interpolate_transform(tf1, tf2, 0.5).apply(DVec3::ZERO),
-        DVec3::new(5.0, 0.0, 0.0),
+        interpolate_transform(tf1, tf2, 0.5).apply(Point::new(0.0, 0.0, 0.0)),
+        Point::new(5.0, 0.0, 0.0),
         1e-10,
     );
 }
@@ -83,8 +83,8 @@ fn rotation_slerp_average_and_utility_helpers_work() {
     assert!(is_approx_rotation(slerp(r1, r2, 1.0), r2, 1e-10));
     let mid = slerp(r1, r2, 0.5);
     approx_vec(
-        mid.apply(DVec3::new(1.0, 0.0, 0.0)),
-        DVec3::new(
+        mid.apply(Point::new(1.0, 0.0, 0.0)),
+        Point::new(
             std::f64::consts::FRAC_1_SQRT_2,
             std::f64::consts::FRAC_1_SQRT_2,
             0.0,
@@ -129,7 +129,7 @@ fn rotation_slerp_average_and_utility_helpers_work() {
 #[test]
 fn transform_average_and_identity_helpers_work() {
     let tf1 = Transform::<World, Body>::identity();
-    let tf2 = Transform::<World, Body>::from_qt(glam::DQuat::IDENTITY, DVec3::new(10.0, 0.0, 0.0));
+    let tf2 = Transform::<World, Body>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0));
 
     let avg = average_two_transform(tf1, tf2);
     let mid = interpolate_transform(tf1, tf2, 0.5);

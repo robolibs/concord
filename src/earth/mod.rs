@@ -10,6 +10,6 @@ pub use batch::{
     batch_to_wgs_from_ned,
 };
 pub use local_axes::{r_enu_from_ecf, r_ned_from_ecf};
-pub use types::{Ecf, Geo, Utm, Wgs};
+pub use types::{Ecf, Geo, Utm, Wgs, lat_rad, lon_rad, wgs_from_radians};
 pub use utm::{to_utm, to_wgs as utm_to_wgs};
 pub use wgs_ecf::{to_ecf, to_wgs, to_wgs_optimized};

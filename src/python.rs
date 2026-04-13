@@ -1,4 +1,4 @@
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyModule};
@@ -49,8 +49,8 @@ fn ned_dict<'py>(py: Python<'py>, ned: Ned) -> PyResult<Bound<'py, PyDict>> {
 
 fn transform_dict<'py>(
     py: Python<'py>,
-    rotation: DQuat,
-    translation: DVec3,
+    rotation: Quaternion,
+    translation: Point,
 ) -> PyResult<Bound<'py, PyDict>> {
     let dict = PyDict::new(py);
     dict.set_item("rotation", (rotation.x, rotation.y, rotation.z, rotation.w))?;
@@ -95,8 +95,14 @@ fn utm_to_wgs(
         .chars()
         .next()
         .ok_or_else(|| PyValueError::new_err("band must contain at least one character"))?;
-    let wgs = crate::utm_to_wgs(Utm::new(zone, band, easting, northing, altitude))
-        .map_err(py_runtime_error)?;
+    let wgs = crate::utm_to_wgs(Utm {
+        zone,
+        band,
+        easting,
+        northing,
+        altitude,
+    })
+    .map_err(py_runtime_error)?;
     Ok(geo_tuple(wgs))
 }
 
@@ -242,8 +248,8 @@ impl PyTransformTree {
         }
 
         let tf = Transform::<(), ()>::from_qt(
-            DQuat::from_xyzw(rotation.0, rotation.1, rotation.2, rotation.3).normalize(),
-            DVec3::new(translation.0, translation.1, translation.2),
+            Quaternion::new(rotation.3, rotation.0, rotation.1, rotation.2).normalized(),
+            Point::new(translation.0, translation.1, translation.2),
         );
         self.inner.set_transform(to_frame, from_frame, tf);
         Ok(())

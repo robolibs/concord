@@ -10,7 +10,13 @@ fn canonical_earth_and_frame_types_are_root_exported() {
     let origin = Geo::new(52.0, 4.0, 10.0);
     let wgs = Wgs::new(52.0, 4.0, 10.0);
     let ecf = Ecf::new(1.0, 2.0, 3.0);
-    let utm = Utm::new(31, 'U', 500_000.0, 5_760_000.0, 15.0);
+    let utm = Utm {
+        zone: 31,
+        band: 'U',
+        easting: 500_000.0,
+        northing: 5_760_000.0,
+        altitude: 15.0,
+    };
     let enu = Enu::new(1.0, 2.0, 3.0, origin);
     let ned = Ned::new(2.0, 1.0, -3.0, origin);
     let frd = Frd::new(1.0, 2.0, 3.0);
@@ -27,7 +33,16 @@ fn canonical_earth_and_frame_types_are_root_exported() {
 
     assert_eq!(wgs, concord::Wgs::new(52.0, 4.0, 10.0));
     assert_eq!(ecf, concord::Ecf::new(1.0, 2.0, 3.0));
-    assert_eq!(utm, concord::Utm::new(31, 'U', 500_000.0, 5_760_000.0, 15.0));
+    assert_eq!(
+        utm,
+        concord::Utm {
+            zone: 31,
+            band: 'U',
+            easting: 500_000.0,
+            northing: 5_760_000.0,
+            altitude: 15.0,
+        }
+    );
     assert_eq!(enu, concord::Enu::new(1.0, 2.0, 3.0, origin));
     assert_eq!(ned, concord::Ned::new(2.0, 1.0, -3.0, origin));
     assert_eq!(frd, concord::Frd::new(1.0, 2.0, 3.0));

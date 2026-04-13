@@ -1,4 +1,4 @@
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 
 use concord::{TimedTransformTree, Transform};
 
@@ -15,13 +15,13 @@ fn main() {
     tree.set_transform(
         "world",
         "odom",
-        Transform::<World, Odom>::from_qt(DQuat::IDENTITY, DVec3::ZERO),
+        Transform::<World, Odom>::from_qt(Quaternion::identity(), Point::new(0.0, 0.0, 0.0)),
         1.0,
     );
     tree.set_transform(
         "world",
         "odom",
-        Transform::<World, Odom>::from_qt(DQuat::IDENTITY, DVec3::new(10.0, 0.0, 0.0)),
+        Transform::<World, Odom>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0)),
         2.0,
     );
 

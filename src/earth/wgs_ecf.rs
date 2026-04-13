@@ -1,6 +1,7 @@
 use crate::earth::{
     Ecf, Wgs,
-    wgs84::{DEG_TO_RAD, E2, RAD_TO_DEG, prime_vertical_radius},
+    types::wgs_from_radians,
+    wgs84::{DEG_TO_RAD, E2, prime_vertical_radius},
 };
 
 pub fn to_ecf(wgs: Wgs) -> Ecf {
@@ -46,7 +47,7 @@ fn to_wgs_with_tolerance(ecf: Ecf, tolerance: f64, max_iterations: usize) -> Wgs
             -std::f64::consts::FRAC_PI_2
         };
         let alt = z.abs() - crate::earth::wgs84::B_M;
-        return Wgs::new(lat * RAD_TO_DEG, lon * RAD_TO_DEG, alt);
+        return wgs_from_radians(lat, lon, alt);
     }
 
     let mut lat = z.atan2(p * (1.0 - E2));
@@ -72,5 +73,5 @@ fn to_wgs_with_tolerance(ecf: Ecf, tolerance: f64, max_iterations: usize) -> Wgs
         }
     }
 
-    Wgs::new(lat * RAD_TO_DEG, lon * RAD_TO_DEG, alt)
+    wgs_from_radians(lat, lon, alt)
 }

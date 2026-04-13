@@ -1,4 +1,4 @@
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 
 use concord::{Transform, TransformTree};
 
@@ -18,12 +18,12 @@ fn main() {
     tree.set_transform(
         "world",
         "base",
-        Transform::<World, Base>::from_qt(DQuat::IDENTITY, DVec3::new(1.0, 2.0, 0.0)),
+        Transform::<World, Base>::from_qt(Quaternion::identity(), Point::new(1.0, 2.0, 0.0)),
     );
     tree.set_transform(
         "base",
         "camera",
-        Transform::<Base, Camera>::from_qt(DQuat::IDENTITY, DVec3::new(0.0, 0.0, 1.0)),
+        Transform::<Base, Camera>::from_qt(Quaternion::identity(), Point::new(0.0, 0.0, 1.0)),
     );
 
     let tf = tree.lookup("world", "camera").expect("path exists");

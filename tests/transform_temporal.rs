@@ -1,4 +1,4 @@
-use glam::{DQuat, DVec3};
+use datapod::{Euler, Point, Quaternion};
 
 use concord::{
     GenericTransform, TimedTransformBuffer, TimedTransformTree, Transform, interpolate, lerp, slerp,
@@ -14,18 +14,18 @@ struct BaseLink;
 struct Camera;
 
 fn make_translation<To, From>(x: f64, y: f64, z: f64) -> Transform<To, From> {
-    Transform::from_qt(DQuat::IDENTITY, DVec3::new(x, y, z))
+    Transform::from_qt(Quaternion::identity(), Point::new(x, y, z))
 }
 
 fn approx_eq(a: f64, b: f64, eps: f64) {
     assert!((a - b).abs() < eps, "left={a}, right={b}");
 }
 
-fn approx_vec(a: DVec3, b: DVec3, eps: f64) {
-    assert!((a - b).length() < eps, "left={a:?}, right={b:?}");
+fn approx_vec(a: Point, b: Point, eps: f64) {
+    assert!((a - b).magnitude() < eps, "left={a:?}, right={b:?}");
 }
 
-fn approx_quat(a: DQuat, b: DQuat, eps: f64) {
+fn approx_quat(a: Quaternion, b: Quaternion, eps: f64) {
     let da = [a.x, a.y, a.z, a.w];
     let db = [b.x, b.y, b.z, b.w];
     let same = da.iter().zip(db.iter()).all(|(x, y)| (*x - *y).abs() < eps);
@@ -35,20 +35,20 @@ fn approx_quat(a: DQuat, b: DQuat, eps: f64) {
 
 #[test]
 fn interpolation_helpers_work() {
-    let q1 = DQuat::IDENTITY;
-    let q2 = DQuat::from_rotation_z(std::f64::consts::FRAC_PI_2);
+    let q1 = Quaternion::identity();
+    let q2 = Quaternion::from_euler(Euler::new(0.0, 0.0, std::f64::consts::FRAC_PI_2));
     approx_quat(slerp(q1, q1, 0.5), q1, 1e-10);
     approx_quat(slerp(q1, q2, 0.0), q1, 1e-10);
     approx_quat(slerp(q1, q2, 1.0), q2, 1e-10);
 
     approx_vec(
-        lerp(DVec3::ZERO, DVec3::new(10.0, 20.0, 30.0), 0.25),
-        DVec3::new(2.5, 5.0, 7.5),
+        lerp(Point::new(0.0, 0.0, 0.0), Point::new(10.0, 20.0, 30.0), 0.25),
+        Point::new(2.5, 5.0, 7.5),
         1e-12,
     );
 
-    let tf1 = GenericTransform::new(DQuat::IDENTITY, DVec3::ZERO);
-    let tf2 = GenericTransform::new(q2, DVec3::new(10.0, 0.0, 0.0));
+    let tf1 = GenericTransform::new(Quaternion::identity(), Point::new(0.0, 0.0, 0.0));
+    let tf2 = GenericTransform::new(q2, Point::new(10.0, 0.0, 0.0));
     let mid = interpolate(tf1, tf2, 0.5);
     approx_eq(mid.translation.x, 5.0, 1e-12);
 }
@@ -61,8 +61,8 @@ fn timed_transform_buffer_basic_and_interpolation_behavior() {
     assert!(buffer.latest().is_none());
     assert!(buffer.time_range().is_none());
 
-    let tf1 = GenericTransform::new(DQuat::IDENTITY, DVec3::new(0.0, 0.0, 0.0));
-    let tf2 = GenericTransform::new(DQuat::IDENTITY, DVec3::new(10.0, 0.0, 0.0));
+    let tf1 = GenericTransform::new(Quaternion::identity(), Point::new(0.0, 0.0, 0.0));
+    let tf2 = GenericTransform::new(Quaternion::identity(), Point::new(10.0, 0.0, 0.0));
     buffer.add(1.0, tf1);
     buffer.add(2.0, tf2);
 
@@ -132,7 +132,7 @@ fn timed_transform_tree_static_dynamic_and_interpolated_lookup() {
     let result = tree
         .lookup("world", "camera", 1.5)
         .expect("temporal lookup");
-    approx_vec(result.translation, DVec3::new(5.0, 5.0, 1.0), 1e-12);
+    approx_vec(result.translation, Point::new(5.0, 5.0, 1.0), 1e-12);
 
     let exact = tree.lookup("world", "odom", 1.0).expect("exact lookup");
     approx_eq(exact.translation.x, 0.0, 1e-12);
@@ -174,7 +174,7 @@ fn timed_transform_tree_time_range_and_lookup_latest() {
     assert_eq!(tree.time_range("world", "base_link"), Some((1.0, 3.0)));
 
     let latest = tree.lookup_latest("world", "base_link").expect("latest");
-    approx_vec(latest.translation, DVec3::new(3.0, 3.0, 0.0), 1e-12);
+    approx_vec(latest.translation, Point::new(3.0, 3.0, 0.0), 1e-12);
 
     tree.clear();
     assert_eq!(tree.frame_count(), 0);

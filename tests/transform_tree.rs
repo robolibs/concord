@@ -1,4 +1,4 @@
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 
 use concord::{Rotation, Transform, TransformTree};
 
@@ -14,19 +14,19 @@ struct Camera;
 struct Lidar;
 
 fn make_translation<To, From>(x: f64, y: f64, z: f64) -> Transform<To, From> {
-    Transform::from_qt(DQuat::IDENTITY, DVec3::new(x, y, z))
+    Transform::from_qt(Quaternion::identity(), Point::new(x, y, z))
 }
 
 fn make_rotation_z<To, From>(angle_rad: f64) -> Transform<To, From> {
-    Transform::new(Rotation::from_euler_zyx(angle_rad, 0.0, 0.0), DVec3::ZERO)
+    Transform::new(Rotation::from_euler_zyx(angle_rad, 0.0, 0.0), Point::new(0.0, 0.0, 0.0))
 }
 
 fn approx_eq(a: f64, b: f64, eps: f64) {
     assert!((a - b).abs() < eps, "left={a}, right={b}");
 }
 
-fn approx_vec(a: DVec3, b: DVec3, eps: f64) {
-    assert!((a - b).length() < eps, "left={a:?} right={b:?}");
+fn approx_vec(a: Point, b: Point, eps: f64) {
+    assert!((a - b).magnitude() < eps, "left={a:?} right={b:?}");
 }
 
 #[test]
@@ -93,16 +93,16 @@ fn transform_tree_direct_chained_and_inverse_lookup() {
     );
 
     let direct = tree.lookup("world", "odom").expect("direct");
-    approx_vec(direct.translation, DVec3::new(1.0, 0.0, 0.0), 1e-12);
+    approx_vec(direct.translation, Point::new(1.0, 0.0, 0.0), 1e-12);
 
     let chained = tree.lookup("world", "camera").expect("chained");
-    approx_vec(chained.translation, DVec3::new(1.0, 2.0, 3.0), 1e-12);
-    approx_vec(chained.apply(DVec3::ZERO), DVec3::new(1.0, 2.0, 3.0), 1e-12);
+    approx_vec(chained.translation, Point::new(1.0, 2.0, 3.0), 1e-12);
+    approx_vec(chained.apply(Point::new(0.0, 0.0, 0.0)), Point::new(1.0, 2.0, 3.0), 1e-12);
 
     let inverse = tree.lookup("camera", "world").expect("inverse");
-    approx_vec(inverse.translation, DVec3::new(-1.0, -2.0, -3.0), 1e-12);
+    approx_vec(inverse.translation, Point::new(-1.0, -2.0, -3.0), 1e-12);
 
-    let p = DVec3::new(7.0, 11.0, 13.0);
+    let p = Point::new(7.0, 11.0, 13.0);
     approx_vec(inverse.apply(chained.apply(p)), p, 1e-10);
 }
 
@@ -122,8 +122,8 @@ fn transform_tree_rotation_then_translation_composes_correctly() {
     );
 
     let result = tree.lookup("world", "base_link").expect("composed");
-    let expected = DVec3::new(angle.cos(), angle.sin(), 0.0);
-    approx_vec(result.apply(DVec3::ZERO), expected, 1e-10);
+    let expected = Point::new(angle.cos(), angle.sin(), 0.0);
+    approx_vec(result.apply(Point::new(0.0, 0.0, 0.0)), expected, 1e-10);
     approx_vec(result.translation, expected, 1e-10);
 }
 

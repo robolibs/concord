@@ -2,16 +2,17 @@ use std::any::TypeId;
 use std::collections::HashMap;
 use std::ops::Mul;
 
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 use graphix::vertex::algorithms::{bfs_to, reconstruct_bfs_path};
 use graphix::vertex::{EdgeType, Graph, VertexId};
 
 use crate::frame::Transform;
+use crate::math::{negate, quat_identity, quat_rotate};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct GenericTransform {
-    pub rotation: DQuat,
-    pub translation: DVec3,
+    pub rotation: Quaternion,
+    pub translation: Point,
 }
 
 impl Default for GenericTransform {
@@ -21,25 +22,25 @@ impl Default for GenericTransform {
 }
 
 impl GenericTransform {
-    pub fn new(rotation: DQuat, translation: DVec3) -> Self {
+    pub fn new(rotation: Quaternion, translation: Point) -> Self {
         Self {
-            rotation: rotation.normalize(),
+            rotation: rotation.normalized(),
             translation,
         }
     }
 
     pub fn identity() -> Self {
-        Self::new(DQuat::IDENTITY, DVec3::ZERO)
+        Self::new(quat_identity(), Point::new(0.0, 0.0, 0.0))
     }
 
     pub fn inverse(self) -> Self {
         let rotation = self.rotation.conjugate();
-        let translation = -(rotation * self.translation);
+        let translation = negate(quat_rotate(rotation, self.translation));
         Self::new(rotation, translation)
     }
 
-    pub fn apply(self, point: DVec3) -> DVec3 {
-        self.rotation * point + self.translation
+    pub fn apply(self, point: Point) -> Point {
+        quat_rotate(self.rotation, point) + self.translation
     }
 }
 
@@ -49,7 +50,7 @@ impl Mul<GenericTransform> for GenericTransform {
     fn mul(self, rhs: GenericTransform) -> Self::Output {
         GenericTransform::new(
             self.rotation * rhs.rotation,
-            self.rotation * rhs.translation + self.translation,
+            quat_rotate(self.rotation, rhs.translation) + self.translation,
         )
     }
 }

@@ -9,19 +9,19 @@ Current scope:
 - Typed `Rotation<To, From>` and `Transform<To, From>`
 - Runtime transform lookup with `TransformTree`
 - Temporal transform lookup with `TimedTransformTree`
-- Practical Lie helpers and spline helpers on top of `glam`
+- Practical Lie helpers and spline helpers on top of `datapod`
 - C ABI in [`include/concord.h`](include/concord.h)
 - Python bindings via `maturin` in [`pyproject.toml`](pyproject.toml)
 
 The crate uses:
 
-- `glam` for vectors, quaternions, and matrices
-- `graphix_rs` as the local graph backend for runtime transform lookup
+- `datapod` for points, quaternions, transforms, and matrix primitives
+- `graphix` as the graph backend for runtime transform lookup
 
 Status:
 
-- local-only for now
-- not configured for crates.io publication while `graphix` remains a local path dependency
+- git dependency based for now
+- not configured for crates.io publication
 
 ## Install
 
@@ -30,7 +30,7 @@ Status:
 concord = { path = "../concord_rs" }
 ```
 
-This assumes `../concord_rs` and `../graphix_rs` stay as sibling local crates, matching the current workspace layout.
+The crate itself currently depends on the Codeberg-hosted `datapod` and `graphix` repos.
 
 ## Examples
 
@@ -73,7 +73,7 @@ assert!((roundtrip.latitude - point.latitude).abs() < 1e-10);
 ### Transform tree lookup
 
 ```rust
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 use concord::{Transform, TransformTree};
 
 #[derive(Debug, Clone, Copy)]
@@ -91,22 +91,22 @@ tree.register_frame::<Camera>("camera");
 tree.set_transform(
     "world",
     "base",
-    Transform::<World, Base>::from_qt(DQuat::IDENTITY, DVec3::new(1.0, 2.0, 0.0)),
+    Transform::<World, Base>::from_qt(Quaternion::identity(), Point::new(1.0, 2.0, 0.0)),
 );
 tree.set_transform(
     "base",
     "camera",
-    Transform::<Base, Camera>::from_qt(DQuat::IDENTITY, DVec3::new(0.0, 0.0, 1.0)),
+    Transform::<Base, Camera>::from_qt(Quaternion::identity(), Point::new(0.0, 0.0, 1.0)),
 );
 
 let tf = tree.lookup("world", "camera").expect("path exists");
-assert_eq!(tf.translation, DVec3::new(1.0, 2.0, 1.0));
+assert_eq!(tf.translation, Point::new(1.0, 2.0, 1.0));
 ```
 
 ### Timed transform lookup
 
 ```rust
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 use concord::{TimedTransformTree, Transform};
 
 #[derive(Debug, Clone, Copy)]
@@ -121,18 +121,18 @@ tree.register_frame::<Odom>("odom");
 tree.set_transform(
     "world",
     "odom",
-    Transform::<World, Odom>::from_qt(DQuat::IDENTITY, DVec3::ZERO),
+    Transform::<World, Odom>::from_qt(Quaternion::identity(), Point::new(0.0, 0.0, 0.0)),
     1.0,
 );
 tree.set_transform(
     "world",
     "odom",
-    Transform::<World, Odom>::from_qt(DQuat::IDENTITY, DVec3::new(10.0, 0.0, 0.0)),
+    Transform::<World, Odom>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0)),
     2.0,
 );
 
 let tf = tree.lookup("world", "odom", 1.5).expect("interpolated transform");
-assert_eq!(tf.translation, DVec3::new(5.0, 0.0, 0.0));
+assert_eq!(tf.translation, Point::new(5.0, 0.0, 0.0));
 ```
 
 Runnable versions of these snippets live in [`examples/`](examples).

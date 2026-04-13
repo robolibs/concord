@@ -27,8 +27,8 @@ python = ["dep:pyo3", "pyo3/abi3-py39", "pyo3/auto-initialize"]
 python-extension = ["python", "pyo3/extension-module"]
 
 [dependencies]
-glam = "0.30"
-graphix = { version = "0.0.1", path = "../graphix_rs" }
+datapod = { git = "https://codeberg.org/robolibs/datapod.git" }
+graphix = { git = "https://codeberg.org/robolibs/graphix.git" }
 kiddo = "4.2"
 pyo3 = { version = "0.23", optional = true }
 rayon = "1.10"

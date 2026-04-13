@@ -40,7 +40,7 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 name = "concord"
 version = "0.0.1"
 dependencies = [
- "glam",
+ "datapod",
  "graphix",
  "kiddo",
  "pyo3",
@@ -79,6 +79,11 @@ name = "crunchy"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
+
+[[package]]
+name = "datapod"
+version = "0.0.1"
+source = "git+https://codeberg.org/robolibs/datapod.git#b0da2bbaa372bdfe4a50f5150c7f082ae90e008a"
 
 [[package]]
 name = "divrem"
@@ -139,16 +144,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "glam"
-version = "0.30.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19fc433e8437a212d1b6f1e68c7824af3aed907da60afa994e7f542d18d12aa9"
-
-[[package]]
 name = "graphix"
 version = "0.0.1"
+source = "git+https://codeberg.org/robolibs/graphix.git#19d74a983dfa9fe75d91fb850d2a822ca531a7e7"
 dependencies = [
- "glam",
+ "datapod",
  "kiddo",
  "rayon",
  "tokio",

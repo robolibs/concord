@@ -1,16 +1,19 @@
-use glam::DVec3;
-
 use crate::{
     core::{Error, Result},
-    earth::{Ecf, Geo, Utm, Wgs, local_axes::r_enu_from_ecf, to_ecf, to_utm, to_wgs, utm_to_wgs},
+    earth::{
+        Ecf, Geo, Utm, Wgs,
+        local_axes::r_enu_from_ecf,
+        to_ecf, to_utm, to_wgs, lat_rad, lon_rad, utm_to_wgs,
+    },
     frame::{Enu, Ned, enu_to_ned, ned_to_enu},
+    math::{mat3_mul_vec, mat3_transpose},
 };
 
 pub fn to_enu(origin: Geo, wgs: Wgs) -> Enu {
     let point_ecf = to_ecf(wgs);
-    let origin_ecf = to_ecf(origin.into());
-    let delta = point_ecf.as_dvec3() - origin_ecf.as_dvec3();
-    let enu = r_enu_from_ecf(origin.lat_rad(), origin.lon_rad()) * delta;
+    let origin_ecf = to_ecf(origin);
+    let delta = point_ecf - origin_ecf;
+    let enu = mat3_mul_vec(r_enu_from_ecf(lat_rad(origin), lon_rad(origin)), delta);
     Enu::new(enu.x, enu.y, enu.z, origin)
 }
 
@@ -20,11 +23,11 @@ pub fn to_ned(origin: Geo, wgs: Wgs) -> Ned {
 }
 
 pub fn to_wgs_from_enu(enu: Enu) -> Wgs {
-    let origin = Wgs::from(enu.origin);
-    let rotation = r_enu_from_ecf(origin.lat_rad(), origin.lon_rad());
-    let delta_ecf: DVec3 = rotation.transpose() * enu.local;
+    let origin = enu.origin;
+    let rotation = r_enu_from_ecf(lat_rad(origin), lon_rad(origin));
+    let delta_ecf = mat3_mul_vec(mat3_transpose(rotation), enu.local);
     let origin_ecf = to_ecf(origin);
-    to_wgs((origin_ecf.as_dvec3() + delta_ecf).into())
+    to_wgs(origin_ecf + delta_ecf)
 }
 
 pub fn to_wgs_from_ned(ned: Ned) -> Wgs {

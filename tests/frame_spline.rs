@@ -1,4 +1,4 @@
-use glam::{DQuat, DVec3};
+use datapod::{Point, Quaternion};
 
 use concord::frame::{
     Rotation, RotationSpline, TimedRotationSpline, TimedTransformSpline, Transform,
@@ -15,8 +15,8 @@ fn approx_eq(a: f64, b: f64, eps: f64) {
     assert!((a - b).abs() < eps, "left={a}, right={b}");
 }
 
-fn approx_vec(a: DVec3, b: DVec3, eps: f64) {
-    assert!((a - b).length() < eps, "left={a:?}, right={b:?}");
+fn approx_vec(a: Point, b: Point, eps: f64) {
+    assert!((a - b).magnitude() < eps, "left={a:?}, right={b:?}");
 }
 
 #[test]
@@ -72,7 +72,7 @@ fn rotation_spline_evaluates_endpoints_and_monotonic_angles() {
 #[test]
 fn transform_spline_interpolates_translation_and_samples() {
     let tf1 = Transform::<World, Body>::identity();
-    let tf2 = Transform::<World, Body>::from_qt(DQuat::IDENTITY, DVec3::new(10.0, 0.0, 0.0));
+    let tf2 = Transform::<World, Body>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0));
 
     let empty = TransformSpline::<World, Body>::new();
     assert!(is_identity_transform(empty.evaluate(0.0), 1e-12));
@@ -83,7 +83,7 @@ fn transform_spline_interpolates_translation_and_samples() {
     assert!(is_approx_transform(spline.evaluate(1.0), tf2, 1e-10));
 
     let mid = spline.evaluate_normalized(0.5);
-    approx_vec(mid.apply(DVec3::ZERO), DVec3::new(5.0, 0.0, 0.0), 1e-10);
+    approx_vec(mid.apply(Point::new(0.0, 0.0, 0.0)), Point::new(5.0, 0.0, 0.0), 1e-10);
 
     let samples = sample_transform_spline(&spline, 5);
     assert_eq!(samples.len(), 5);
@@ -123,8 +123,8 @@ fn timed_rotation_spline_sorts_range_checks_and_evaluates() {
 
 #[test]
 fn timed_transform_spline_evaluates_midpoint_and_clamps() {
-    let tf1 = Transform::<World, Body>::from_qt(DQuat::IDENTITY, DVec3::ZERO);
-    let tf2 = Transform::<World, Body>::from_qt(DQuat::IDENTITY, DVec3::new(10.0, 0.0, 0.0));
+    let tf1 = Transform::<World, Body>::from_qt(Quaternion::identity(), Point::new(0.0, 0.0, 0.0));
+    let tf2 = Transform::<World, Body>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0));
 
     let mut spline = TimedTransformSpline::<World, Body>::new();
     spline.add_point(1.0, tf1);
@@ -136,8 +136,8 @@ fn timed_transform_spline_evaluates_midpoint_and_clamps() {
     approx_eq(range.1, 2.0, 1e-12);
 
     approx_vec(
-        spline.evaluate_at(1.5).apply(DVec3::ZERO),
-        DVec3::new(5.0, 0.0, 0.0),
+        spline.evaluate_at(1.5).apply(Point::new(0.0, 0.0, 0.0)),
+        Point::new(5.0, 0.0, 0.0),
         1e-10,
     );
     assert!(is_approx_transform(spline.evaluate_at(0.0), tf1, 1e-10));
