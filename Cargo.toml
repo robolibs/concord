@@ -8,8 +8,10 @@ readme = "README.md"
 publish = false
 include = [
     "Cargo.toml",
+    "pyproject.toml",
     "README.md",
     "LICENSE",
+    "include/**/*.h",
     "src/**/*.rs",
     "examples/**/*.rs",
     "tests/**/*.rs",
@@ -21,13 +23,14 @@ crate-type = ["rlib", "cdylib"]
 
 [features]
 default = []
-python = ["dep:pyo3"]
+python = ["dep:pyo3", "pyo3/abi3-py39", "pyo3/auto-initialize"]
+python-extension = ["python", "pyo3/extension-module"]
 
 [dependencies]
 glam = "0.30"
 graphix = { version = "0.0.1", path = "../graphix_rs" }
 kiddo = "4.2"
-pyo3 = { version = "0.23", optional = true, features = ["abi3-py39", "auto-initialize", "extension-module"] }
+pyo3 = { version = "0.23", optional = true }
 rayon = "1.10"
 thiserror = "2.0"
 tokio = { version = "1.48", features = ["fs", "macros", "rt-multi-thread"] }
