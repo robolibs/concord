@@ -1,6 +1,7 @@
-use datapod::{Euler, Point, Quaternion, mat::Matrix};
+use datapod::{Euler, Point, Quaternion};
+use nalgebra::{Matrix3, RowVector3};
 
-pub type Mat3 = Matrix<f64, 3, 3>;
+pub type Mat3 = Matrix3<f64>;
 pub type Vec3 = Point;
 pub type Quat = Quaternion;
 
@@ -116,47 +117,48 @@ pub fn quat_to_matrix(q: Quat) -> Mat3 {
     let wy = q.w * q.y;
     let wz = q.w * q.z;
 
-    Matrix::from_rows([
-        [1.0 - 2.0 * (yy + zz), 2.0 * (xy - wz), 2.0 * (xz + wy)],
-        [2.0 * (xy + wz), 1.0 - 2.0 * (xx + zz), 2.0 * (yz - wx)],
-        [2.0 * (xz - wy), 2.0 * (yz + wx), 1.0 - 2.0 * (xx + yy)],
-    ])
+    Mat3::new(
+        1.0 - 2.0 * (yy + zz), 2.0 * (xy - wz),       2.0 * (xz + wy),
+        2.0 * (xy + wz),       1.0 - 2.0 * (xx + zz), 2.0 * (yz - wx),
+        2.0 * (xz - wy),       2.0 * (yz + wx),       1.0 - 2.0 * (xx + yy),
+    )
 }
 
 pub fn quat_from_matrix(matrix: Mat3) -> Quat {
-    let m = matrix.as_rows();
-    let trace = m[0][0] + m[1][1] + m[2][2];
+    // Element access via `[(row, col)]`.
+    let m = &matrix;
+    let trace = m[(0, 0)] + m[(1, 1)] + m[(2, 2)];
 
     let q = if trace > 0.0 {
         let s = (trace + 1.0).sqrt() * 2.0;
         Quat::new(
             0.25 * s,
-            (m[2][1] - m[1][2]) / s,
-            (m[0][2] - m[2][0]) / s,
-            (m[1][0] - m[0][1]) / s,
+            (m[(2, 1)] - m[(1, 2)]) / s,
+            (m[(0, 2)] - m[(2, 0)]) / s,
+            (m[(1, 0)] - m[(0, 1)]) / s,
         )
-    } else if m[0][0] > m[1][1] && m[0][0] > m[2][2] {
-        let s = (1.0 + m[0][0] - m[1][1] - m[2][2]).sqrt() * 2.0;
+    } else if m[(0, 0)] > m[(1, 1)] && m[(0, 0)] > m[(2, 2)] {
+        let s = (1.0 + m[(0, 0)] - m[(1, 1)] - m[(2, 2)]).sqrt() * 2.0;
         Quat::new(
-            (m[2][1] - m[1][2]) / s,
+            (m[(2, 1)] - m[(1, 2)]) / s,
             0.25 * s,
-            (m[0][1] + m[1][0]) / s,
-            (m[0][2] + m[2][0]) / s,
+            (m[(0, 1)] + m[(1, 0)]) / s,
+            (m[(0, 2)] + m[(2, 0)]) / s,
         )
-    } else if m[1][1] > m[2][2] {
-        let s = (1.0 + m[1][1] - m[0][0] - m[2][2]).sqrt() * 2.0;
+    } else if m[(1, 1)] > m[(2, 2)] {
+        let s = (1.0 + m[(1, 1)] - m[(0, 0)] - m[(2, 2)]).sqrt() * 2.0;
         Quat::new(
-            (m[0][2] - m[2][0]) / s,
-            (m[0][1] + m[1][0]) / s,
+            (m[(0, 2)] - m[(2, 0)]) / s,
+            (m[(0, 1)] + m[(1, 0)]) / s,
             0.25 * s,
-            (m[1][2] + m[2][1]) / s,
+            (m[(1, 2)] + m[(2, 1)]) / s,
         )
     } else {
-        let s = (1.0 + m[2][2] - m[0][0] - m[1][1]).sqrt() * 2.0;
+        let s = (1.0 + m[(2, 2)] - m[(0, 0)] - m[(1, 1)]).sqrt() * 2.0;
         Quat::new(
-            (m[1][0] - m[0][1]) / s,
-            (m[0][2] + m[2][0]) / s,
-            (m[1][2] + m[2][1]) / s,
+            (m[(1, 0)] - m[(0, 1)]) / s,
+            (m[(0, 2)] + m[(2, 0)]) / s,
+            (m[(1, 2)] + m[(2, 1)]) / s,
             0.25 * s,
         )
     };
@@ -165,68 +167,34 @@ pub fn quat_from_matrix(matrix: Mat3) -> Quat {
 }
 
 pub fn mat3_identity() -> Mat3 {
-    Matrix::from_rows([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    Mat3::identity()
 }
 
 pub fn mat3_from_rows(rows: [[f64; 3]; 3]) -> Mat3 {
-    Matrix::from_rows(rows)
+    Mat3::from_rows(&[
+        RowVector3::new(rows[0][0], rows[0][1], rows[0][2]),
+        RowVector3::new(rows[1][0], rows[1][1], rows[1][2]),
+        RowVector3::new(rows[2][0], rows[2][1], rows[2][2]),
+    ])
 }
 
 pub fn mat3_transpose(matrix: Mat3) -> Mat3 {
-    let m = matrix.as_rows();
-    Matrix::from_rows([
-        [m[0][0], m[1][0], m[2][0]],
-        [m[0][1], m[1][1], m[2][1]],
-        [m[0][2], m[1][2], m[2][2]],
-    ])
+    matrix.transpose()
 }
 
 pub fn mat3_mul_vec(matrix: Mat3, vector: Vec3) -> Vec3 {
-    let m = matrix.as_rows();
-    vec3(
-        m[0][0] * vector.x + m[0][1] * vector.y + m[0][2] * vector.z,
-        m[1][0] * vector.x + m[1][1] * vector.y + m[1][2] * vector.z,
-        m[2][0] * vector.x + m[2][1] * vector.y + m[2][2] * vector.z,
-    )
+    let v = matrix * nalgebra::Vector3::new(vector.x, vector.y, vector.z);
+    vec3(v.x, v.y, v.z)
 }
 
 pub fn mat3_mul_mat(a: Mat3, b: Mat3) -> Mat3 {
-    let a = a.as_rows();
-    let b = b.as_rows();
-    Matrix::from_rows([
-        [
-            a[0][0] * b[0][0] + a[0][1] * b[1][0] + a[0][2] * b[2][0],
-            a[0][0] * b[0][1] + a[0][1] * b[1][1] + a[0][2] * b[2][1],
-            a[0][0] * b[0][2] + a[0][1] * b[1][2] + a[0][2] * b[2][2],
-        ],
-        [
-            a[1][0] * b[0][0] + a[1][1] * b[1][0] + a[1][2] * b[2][0],
-            a[1][0] * b[0][1] + a[1][1] * b[1][1] + a[1][2] * b[2][1],
-            a[1][0] * b[0][2] + a[1][1] * b[1][2] + a[1][2] * b[2][2],
-        ],
-        [
-            a[2][0] * b[0][0] + a[2][1] * b[1][0] + a[2][2] * b[2][0],
-            a[2][0] * b[0][1] + a[2][1] * b[1][1] + a[2][2] * b[2][1],
-            a[2][0] * b[0][2] + a[2][1] * b[1][2] + a[2][2] * b[2][2],
-        ],
-    ])
+    a * b
 }
 
 pub fn mat3_scale(matrix: Mat3, scalar: f64) -> Mat3 {
-    let m = matrix.as_rows();
-    Matrix::from_rows([
-        [m[0][0] * scalar, m[0][1] * scalar, m[0][2] * scalar],
-        [m[1][0] * scalar, m[1][1] * scalar, m[1][2] * scalar],
-        [m[2][0] * scalar, m[2][1] * scalar, m[2][2] * scalar],
-    ])
+    matrix * scalar
 }
 
 pub fn mat3_add(a: Mat3, b: Mat3) -> Mat3 {
-    let a = a.as_rows();
-    let b = b.as_rows();
-    Matrix::from_rows([
-        [a[0][0] + b[0][0], a[0][1] + b[0][1], a[0][2] + b[0][2]],
-        [a[1][0] + b[1][0], a[1][1] + b[1][1], a[1][2] + b[1][2]],
-        [a[2][0] + b[2][0], a[2][1] + b[2][1], a[2][2] + b[2][2]],
-    ])
+    a + b
 }

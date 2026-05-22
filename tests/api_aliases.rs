@@ -12,7 +12,7 @@ fn canonical_earth_and_frame_types_are_root_exported() {
     let ecf = Ecf::new(1.0, 2.0, 3.0);
     let utm = Utm {
         zone: 31,
-        band: 'U',
+        band: 'U' as u32,
         easting: 500_000.0,
         northing: 5_760_000.0,
         altitude: 15.0,
@@ -37,7 +37,7 @@ fn canonical_earth_and_frame_types_are_root_exported() {
         utm,
         concord::Utm {
             zone: 31,
-            band: 'U',
+            band: 'U' as u32,
             easting: 500_000.0,
             northing: 5_760_000.0,
             altitude: 15.0,

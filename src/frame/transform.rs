@@ -1,6 +1,6 @@
 use std::{fmt, marker::PhantomData, ops::Mul};
 
-use datapod::{Point, Quaternion, mat::Matrix};
+use datapod::{Point, Quaternion};
 
 use crate::math::{
     Mat3, Quat, Vec3, negate, quat_from_axis_angle, quat_from_euler_zyx, quat_from_matrix,
@@ -33,7 +33,7 @@ impl<To, From, T> Rotation<To, From, T> {
         Self::new(quat)
     }
 
-    pub fn from_matrix(matrix: Matrix<f64, 3, 3>) -> Self {
+    pub fn from_matrix(matrix: crate::math::Mat3) -> Self {
         Self::new(quat_from_matrix(matrix))
     }
 
@@ -112,7 +112,7 @@ impl<To, From, T> Transform<To, From, T> {
         Self::new(Rotation::new(quat), translation)
     }
 
-    pub fn from_rt(matrix: Matrix<f64, 3, 3>, translation: Point) -> Self {
+    pub fn from_rt(matrix: crate::math::Mat3, translation: Point) -> Self {
         Self::new(Rotation::from_matrix(matrix), translation)
     }
 

@@ -1,14 +1,12 @@
-use datapod::{Point, mat::Matrix};
+use datapod::Point;
 
 use concord::earth::{r_enu_from_ecf, r_ned_from_ecf};
+use concord::math::Mat3;
 
-fn mul_mat(matrix: Matrix<f64, 3, 3>, vector: Point) -> Point {
-    let m = matrix.as_rows();
-    Point::new(
-        m[0][0] * vector.x + m[0][1] * vector.y + m[0][2] * vector.z,
-        m[1][0] * vector.x + m[1][1] * vector.y + m[1][2] * vector.z,
-        m[2][0] * vector.x + m[2][1] * vector.y + m[2][2] * vector.z,
-    )
+fn mul_mat(matrix: Mat3, vector: Point) -> Point {
+    let v = nalgebra::Vector3::new(vector.x, vector.y, vector.z);
+    let r = matrix * v;
+    Point::new(r[0], r[1], r[2])
 }
 
 fn approx_vec(a: Point, b: Point, eps: f64) {

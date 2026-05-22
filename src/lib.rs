@@ -63,7 +63,7 @@ pub mod core;
 pub mod earth;
 pub mod ffi;
 pub mod frame;
-mod math;
+pub mod math;
 #[cfg(feature = "python")]
 pub mod python;
 pub mod transform;

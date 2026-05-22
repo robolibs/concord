@@ -130,11 +130,12 @@ impl TryFrom<ConcordUtm> for Utm {
     type Error = crate::Error;
 
     fn try_from(value: ConcordUtm) -> crate::Result<Self> {
-        let band = char::from_u32(value.band)
+        // Validate the codepoint is a real char; Utm stores it as u32 directly.
+        let _ = char::from_u32(value.band)
             .ok_or_else(|| crate::Error::InvalidArgument("invalid UTM band codepoint".into()))?;
         Ok(Self {
             zone: value.zone,
-            band,
+            band: value.band,
             easting: value.easting,
             northing: value.northing,
             altitude: value.altitude,
