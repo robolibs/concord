@@ -27,8 +27,8 @@ python = ["dep:pyo3", "pyo3/abi3-py39", "pyo3/auto-initialize"]
 python-extension = ["python", "pyo3/extension-module"]
 
 [dependencies]
-datapod = { git = "https://codeberg.org/robolibs/datapod.git", rev = "4547e328826fb4fd788b7acac29c2f70efc62746" }
-graphix = { git = "https://codeberg.org/robolibs/graphix.git", rev = "63b38d1b71b621cddf6d6a3070d9646bea83e7c4" }
+datapod = { git = "https://codeberg.org/robolibs/datapod.git", tag = "0.2.0" }
+graphix = { git = "https://codeberg.org/robolibs/graphix.git", tag = "0.1.0" }
 kiddo = "4.2"
 nalgebra = "0.33"
 pyo3 = { version = "0.23", optional = true }
