@@ -70,7 +70,11 @@ pub fn to_utm(wgs: Wgs) -> Result<Utm> {
 
     Ok(Utm {
         zone,
-        band: if is_north(wgs.latitude) { b'N' as u32 } else { b'S' as u32 },
+        band: if is_north(wgs.latitude) {
+            b'N' as u32
+        } else {
+            b'S' as u32
+        },
         easting,
         northing,
         altitude: wgs.altitude,

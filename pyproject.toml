@@ -4,10 +4,10 @@ build-backend = "maturin"
 
 [project]
 name = "concord"
-version = "0.0.1"
+version = "0.1.0"
 description = "Python bindings for the concord robotics coordinate library"
 requires-python = ">=3.9"
 
 [tool.maturin]
-features = ["python-extension"]
+features = ["python"]
 module-name = "concord"

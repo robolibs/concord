@@ -18,7 +18,10 @@ fn make_translation<To, From>(x: f64, y: f64, z: f64) -> Transform<To, From> {
 }
 
 fn make_rotation_z<To, From>(angle_rad: f64) -> Transform<To, From> {
-    Transform::new(Rotation::from_euler_zyx(angle_rad, 0.0, 0.0), Point::new(0.0, 0.0, 0.0))
+    Transform::new(
+        Rotation::from_euler_zyx(angle_rad, 0.0, 0.0),
+        Point::new(0.0, 0.0, 0.0),
+    )
 }
 
 fn approx_eq(a: f64, b: f64, eps: f64) {
@@ -97,7 +100,11 @@ fn transform_tree_direct_chained_and_inverse_lookup() {
 
     let chained = tree.lookup("world", "camera").expect("chained");
     approx_vec(chained.translation, Point::new(1.0, 2.0, 3.0), 1e-12);
-    approx_vec(chained.apply(Point::new(0.0, 0.0, 0.0)), Point::new(1.0, 2.0, 3.0), 1e-12);
+    approx_vec(
+        chained.apply(Point::new(0.0, 0.0, 0.0)),
+        Point::new(1.0, 2.0, 3.0),
+        1e-12,
+    );
 
     let inverse = tree.lookup("camera", "world").expect("inverse");
     approx_vec(inverse.translation, Point::new(-1.0, -2.0, -3.0), 1e-12);

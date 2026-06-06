@@ -1,3 +1,15 @@
+//! C ABI for concord.
+//!
+//! Conventions: opaque Box-backed handles (free with the matching
+//! *_free); fallible calls return bool/int with the reason in the
+//! thread-local concord_last_error_message(); borrowed views are valid
+//! only for the lifetime documented by the handle they came from.
+//!
+//! `include/concord.h` is generated from this file by cbindgen.
+
+// extern "C" fns take raw pointers from C and deref them by design.
+#![allow(clippy::not_unsafe_ptr_arg_deref)]
+
 use std::cell::RefCell;
 use std::ffi::{CStr, CString, c_char};
 use std::ptr;
@@ -78,7 +90,7 @@ pub struct ConcordTransform {
     pub translation: ConcordVec3,
 }
 
-pub struct ConcordTransformTreeHandle {
+pub struct ConcordTransformTree {
     tree: TransformTree,
 }
 
@@ -118,7 +130,7 @@ impl From<Utm> for ConcordUtm {
     fn from(value: Utm) -> Self {
         Self {
             zone: value.zone,
-            band: value.band as u32,
+            band: value.band,
             easting: value.easting,
             northing: value.northing,
             altitude: value.altitude,
@@ -257,8 +269,8 @@ fn write_out<T>(out: *mut T, value: T) -> bool {
 }
 
 fn tree_from_ptr_mut<'a>(
-    tree: *mut ConcordTransformTreeHandle,
-) -> crate::Result<&'a mut ConcordTransformTreeHandle> {
+    tree: *mut ConcordTransformTree,
+) -> crate::Result<&'a mut ConcordTransformTree> {
     if tree.is_null() {
         return Err(crate::Error::InvalidArgument(
             "null transform tree handle".into(),
@@ -267,9 +279,7 @@ fn tree_from_ptr_mut<'a>(
     Ok(unsafe { &mut *tree })
 }
 
-fn tree_from_ptr<'a>(
-    tree: *const ConcordTransformTreeHandle,
-) -> crate::Result<&'a ConcordTransformTreeHandle> {
+fn tree_from_ptr<'a>(tree: *const ConcordTransformTree) -> crate::Result<&'a ConcordTransformTree> {
     if tree.is_null() {
         return Err(crate::Error::InvalidArgument(
             "null transform tree handle".into(),
@@ -374,15 +384,15 @@ pub extern "C" fn concord_convert_wgs_to_enu(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn concord_transform_tree_new() -> *mut ConcordTransformTreeHandle {
+pub extern "C" fn concord_transform_tree_new() -> *mut ConcordTransformTree {
     clear_last_error();
-    Box::into_raw(Box::new(ConcordTransformTreeHandle {
+    Box::into_raw(Box::new(ConcordTransformTree {
         tree: TransformTree::new(),
     }))
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn concord_transform_tree_free(tree: *mut ConcordTransformTreeHandle) {
+pub extern "C" fn concord_transform_tree_free(tree: *mut ConcordTransformTree) {
     if tree.is_null() {
         return;
     }
@@ -393,7 +403,7 @@ pub extern "C" fn concord_transform_tree_free(tree: *mut ConcordTransformTreeHan
 
 #[unsafe(no_mangle)]
 pub extern "C" fn concord_transform_tree_register_frame(
-    tree: *mut ConcordTransformTreeHandle,
+    tree: *mut ConcordTransformTree,
     name: *const c_char,
 ) -> bool {
     let result = (|| -> crate::Result<()> {
@@ -411,7 +421,7 @@ pub extern "C" fn concord_transform_tree_register_frame(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn concord_transform_tree_set_transform(
-    tree: *mut ConcordTransformTreeHandle,
+    tree: *mut ConcordTransformTree,
     to_frame: *const c_char,
     from_frame: *const c_char,
     transform: ConcordTransform,
@@ -447,7 +457,7 @@ pub extern "C" fn concord_transform_tree_set_transform(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn concord_transform_tree_lookup(
-    tree: *mut ConcordTransformTreeHandle,
+    tree: *mut ConcordTransformTree,
     to_frame: *const c_char,
     from_frame: *const c_char,
     out_transform: *mut ConcordTransform,
@@ -473,7 +483,7 @@ pub extern "C" fn concord_transform_tree_lookup(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn concord_transform_tree_can_transform(
-    tree: *mut ConcordTransformTreeHandle,
+    tree: *mut ConcordTransformTree,
     to_frame: *const c_char,
     from_frame: *const c_char,
 ) -> bool {
@@ -494,9 +504,7 @@ pub extern "C" fn concord_transform_tree_can_transform(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn concord_transform_tree_frame_count(
-    tree: *const ConcordTransformTreeHandle,
-) -> usize {
+pub extern "C" fn concord_transform_tree_frame_count(tree: *const ConcordTransformTree) -> usize {
     match tree_from_ptr(tree) {
         Ok(tree) => {
             clear_last_error();
@@ -511,7 +519,7 @@ pub extern "C" fn concord_transform_tree_frame_count(
 
 #[unsafe(no_mangle)]
 pub extern "C" fn concord_transform_tree_transform_count(
-    tree: *const ConcordTransformTreeHandle,
+    tree: *const ConcordTransformTree,
 ) -> usize {
     match tree_from_ptr(tree) {
         Ok(tree) => {

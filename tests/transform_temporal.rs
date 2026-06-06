@@ -42,7 +42,11 @@ fn interpolation_helpers_work() {
     approx_quat(slerp(q1, q2, 1.0), q2, 1e-10);
 
     approx_vec(
-        lerp(Point::new(0.0, 0.0, 0.0), Point::new(10.0, 20.0, 30.0), 0.25),
+        lerp(
+            Point::new(0.0, 0.0, 0.0),
+            Point::new(10.0, 20.0, 30.0),
+            0.25,
+        ),
         Point::new(2.5, 5.0, 7.5),
         1e-12,
     );

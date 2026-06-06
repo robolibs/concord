@@ -47,7 +47,11 @@ fn transform_exp_log_and_interpolation_work() {
 
     let pure_translation: TransformTangent = [1.0, 2.0, 3.0, 0.0, 0.0, 0.0];
     let tf = transform_exp::<World, Body, f64>(pure_translation);
-    approx_vec(tf.apply(Point::new(0.0, 0.0, 0.0)), Point::new(1.0, 2.0, 3.0), 1e-10);
+    approx_vec(
+        tf.apply(Point::new(0.0, 0.0, 0.0)),
+        Point::new(1.0, 2.0, 3.0),
+        1e-10,
+    );
 
     let twist: TransformTangent = [0.5, -0.3, 0.7, 0.1, 0.2, 0.15];
     let back = log_transform(transform_exp::<World, Body, f64>(twist));

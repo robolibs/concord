@@ -91,7 +91,10 @@ fn generic_transform_supports_identity_inverse_apply_and_compose() {
     assert_eq!(identity.apply(point), point);
 
     let tf = GenericTransform::new(Quaternion::identity(), Point::new(5.0, 6.0, 7.0));
-    assert_eq!(tf.apply(Point::new(0.0, 0.0, 0.0)), Point::new(5.0, 6.0, 7.0));
+    assert_eq!(
+        tf.apply(Point::new(0.0, 0.0, 0.0)),
+        Point::new(5.0, 6.0, 7.0)
+    );
     assert_eq!(tf.inverse().apply(tf.apply(point)), point);
 
     let a = GenericTransform::new(Quaternion::identity(), Point::new(1.0, 0.0, 0.0));

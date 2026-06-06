@@ -197,7 +197,11 @@ pub fn angle<To, From, T>(rotation: Rotation<To, From, T>) -> f64 {
 pub fn axis<To, From, T>(rotation: Rotation<To, From, T>) -> RotationTangent {
     let omega = rotation_log(rotation);
     let theta = omega.magnitude();
-    if theta < 1e-12 { vec3_x() } else { omega / theta }
+    if theta < 1e-12 {
+        vec3_x()
+    } else {
+        omega / theta
+    }
 }
 
 pub fn is_identity_rotation<To, From, T>(rotation: Rotation<To, From, T>, eps: f64) -> bool {
@@ -215,10 +219,10 @@ pub fn is_approx_rotation<To, From, T>(
 ) -> bool {
     let qa = a.quaternion();
     let qb = b.quaternion();
-    let same = vec3(qa.x - qb.x, qa.y - qb.y, qa.z - qb.z).magnitude() < eps
-        && (qa.w - qb.w).abs() < eps;
-    let opposite = vec3(qa.x + qb.x, qa.y + qb.y, qa.z + qb.z).magnitude() < eps
-        && (qa.w + qb.w).abs() < eps;
+    let same =
+        vec3(qa.x - qb.x, qa.y - qb.y, qa.z - qb.z).magnitude() < eps && (qa.w - qb.w).abs() < eps;
+    let opposite =
+        vec3(qa.x + qb.x, qa.y + qb.y, qa.z + qb.z).magnitude() < eps && (qa.w + qb.w).abs() < eps;
     same || opposite
 }
 

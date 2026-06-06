@@ -118,9 +118,15 @@ pub fn quat_to_matrix(q: Quat) -> Mat3 {
     let wz = q.w * q.z;
 
     Mat3::new(
-        1.0 - 2.0 * (yy + zz), 2.0 * (xy - wz),       2.0 * (xz + wy),
-        2.0 * (xy + wz),       1.0 - 2.0 * (xx + zz), 2.0 * (yz - wx),
-        2.0 * (xz - wy),       2.0 * (yz + wx),       1.0 - 2.0 * (xx + yy),
+        1.0 - 2.0 * (yy + zz),
+        2.0 * (xy - wz),
+        2.0 * (xz + wy),
+        2.0 * (xy + wz),
+        1.0 - 2.0 * (xx + zz),
+        2.0 * (yz - wx),
+        2.0 * (xz - wy),
+        2.0 * (yz + wx),
+        1.0 - 2.0 * (xx + yy),
     )
 }
 

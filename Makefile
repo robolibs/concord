@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
-PROJECT_NAME := $(shell sed -n '/^[[:space:]]*[^#\[[:space:]]/p' PROJECT | head -1 | tr -d '[:space:]')
-PROJECT_VERSION := $(shell sed -n '/^[[:space:]]*[^#\[[:space:]]/p' PROJECT | sed -n '2p' | tr -d '[:space:]')
+PROJECT_NAME := $(shell if [ -f PROJECT ]; then sed -n '/^[[:space:]]*[^#\[[:space:]]/p' PROJECT | head -1 | tr -d '[:space:]'; else sed -n 's/^[[:space:]]*name[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' Cargo.toml | head -1; fi)
+PROJECT_VERSION := $(shell if [ -f PROJECT ]; then sed -n '/^[[:space:]]*[^#\[[:space:]]/p' PROJECT | sed -n '2p' | tr -d '[:space:]'; else sed -n 's/^[[:space:]]*version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' Cargo.toml | head -1; fi)
 ifeq ($(PROJECT_NAME),)
     $(error Error: PROJECT file not found or invalid)
 endif
@@ -16,7 +16,7 @@ $(info ------------------------------------------)
 $(info Project: $(PROJECT_NAME) v$(PROJECT_VERSION))
 $(info ------------------------------------------)
 
-.PHONY: build b compile c run r test t check fmt bench clean help h
+.PHONY: build b compile c run r test t check fmt bench clean bind bind-c bind-py help h
 
 build:
 	@$(CARGO) build --lib
@@ -48,6 +48,16 @@ fmt:
 clean:
 	@$(CARGO) clean
 
+bind: bind-c bind-py
+
+bind-c:
+	@$(CARGO) build --lib
+	@cbindgen --config cbindgen.toml --crate $(PROJECT_NAME) \
+		--output include/$(PROJECT_NAME).h
+
+bind-py:
+	@maturin build --features python
+
 docs:
 	@command -v mdbook >/dev/null 2>&1 || { echo "mdbook is not installed. Please install it first."; exit 1; }
 	@mdbook build $(TOP_DIR)/book --dest-dir $(TOP_DIR)/docs
@@ -73,6 +83,7 @@ help:
 	@echo "  compile      Clean and rebuild"
 	@echo "  run          Run a development example (if examples exist)"
 	@echo "  test         Run all tests"
+	@echo "  bind         Generate both C and Python bindings"
 	@echo "  check        Run cargo check on all targets"
 	@echo "  fmt          Format the workspace"
 	@echo "  clean        Remove Cargo build artifacts"

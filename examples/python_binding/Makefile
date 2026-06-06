@@ -13,7 +13,7 @@ $(VENV_PYTHON):
 	@$(PYTHON) -m venv $(VENV)
 
 develop: $(VENV_PYTHON)
-	@cd $(ROOT) && VIRTUAL_ENV=$(CURDIR)/$(VENV) PATH=$(CURDIR)/$(VENV)/bin:$$PATH PYO3_PYTHON=$(VENV_PYTHON) maturin develop --features python-extension
+	@cd $(ROOT) && VIRTUAL_ENV=$(CURDIR)/$(VENV) PATH=$(CURDIR)/$(VENV)/bin:$$PATH PYO3_PYTHON=$(VENV_PYTHON) maturin develop --features python
 
 basic: develop
 	@$(VENV_PYTHON) basic.py

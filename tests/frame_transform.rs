@@ -75,9 +75,15 @@ fn transform_identity_translation_inverse_and_mul() {
 
 #[test]
 fn transform_composition() {
-    let t_wb = Transform::<World, Body>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0));
-    let t_bs = Transform::<Body, Sensor>::from_qt(Quaternion::identity(), Point::new(0.0, 1.0, 0.0));
+    let t_wb =
+        Transform::<World, Body>::from_qt(Quaternion::identity(), Point::new(10.0, 0.0, 0.0));
+    let t_bs =
+        Transform::<Body, Sensor>::from_qt(Quaternion::identity(), Point::new(0.0, 1.0, 0.0));
     let t_ws = t_wb * t_bs;
 
-    approx_vec(t_ws.apply(Point::new(0.0, 0.0, 0.0)), Point::new(10.0, 1.0, 0.0), 1e-12);
+    approx_vec(
+        t_ws.apply(Point::new(0.0, 0.0, 0.0)),
+        Point::new(10.0, 1.0, 0.0),
+        1e-12,
+    );
 }
