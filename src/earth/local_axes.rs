@@ -1,5 +1,3 @@
-
-
 pub fn r_enu_from_ecf(lat_rad: f64, lon_rad: f64) -> crate::math::Mat3 {
     let sin_lat = lat_rad.sin();
     let cos_lat = lat_rad.cos();

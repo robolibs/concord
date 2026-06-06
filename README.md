@@ -155,7 +155,7 @@ Typical commands:
 
 ```bash
 cargo check --features python
-maturin develop --features python-extension
+maturin develop --features python
 ```
 
 The Python surface currently exposes:

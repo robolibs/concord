@@ -1,0 +1,16 @@
+language = "C"
+include_guard = "CONCORD_H"
+cpp_compat = true
+documentation = true
+style = "type"
+no_includes = false
+sys_includes = ["stdbool.h", "stddef.h", "stdint.h"]
+
+[parse]
+parse_deps = false
+
+[enum]
+rename_variants = "QualifiedScreamingSnakeCase"
+prefix_with_name = true
+
+[export]

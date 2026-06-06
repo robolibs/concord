@@ -97,7 +97,7 @@ fn utm_to_wgs(
         .ok_or_else(|| PyValueError::new_err("band must contain at least one character"))?;
     let wgs = crate::utm_to_wgs(Utm {
         zone,
-        band,
+        band: band as u32,
         easting,
         northing,
         altitude,

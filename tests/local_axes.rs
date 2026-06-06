@@ -17,16 +17,40 @@ fn approx_vec(a: Point, b: Point, eps: f64) {
 fn enu_axes_at_equator_prime_meridian() {
     let r = r_enu_from_ecf(0.0, 0.0);
 
-    approx_vec(mul_mat(r, Point::new(1.0, 0.0, 0.0)), Point::new(0.0, 0.0, 1.0), 1e-12);
-    approx_vec(mul_mat(r, Point::new(0.0, 1.0, 0.0)), Point::new(1.0, 0.0, 0.0), 1e-12);
-    approx_vec(mul_mat(r, Point::new(0.0, 0.0, 1.0)), Point::new(0.0, 1.0, 0.0), 1e-12);
+    approx_vec(
+        mul_mat(r, Point::new(1.0, 0.0, 0.0)),
+        Point::new(0.0, 0.0, 1.0),
+        1e-12,
+    );
+    approx_vec(
+        mul_mat(r, Point::new(0.0, 1.0, 0.0)),
+        Point::new(1.0, 0.0, 0.0),
+        1e-12,
+    );
+    approx_vec(
+        mul_mat(r, Point::new(0.0, 0.0, 1.0)),
+        Point::new(0.0, 1.0, 0.0),
+        1e-12,
+    );
 }
 
 #[test]
 fn ned_axes_at_equator_prime_meridian() {
     let r = r_ned_from_ecf(0.0, 0.0);
 
-    approx_vec(mul_mat(r, Point::new(1.0, 0.0, 0.0)), Point::new(0.0, 0.0, -1.0), 1e-12);
-    approx_vec(mul_mat(r, Point::new(0.0, 1.0, 0.0)), Point::new(0.0, 1.0, 0.0), 1e-12);
-    approx_vec(mul_mat(r, Point::new(0.0, 0.0, 1.0)), Point::new(1.0, 0.0, 0.0), 1e-12);
+    approx_vec(
+        mul_mat(r, Point::new(1.0, 0.0, 0.0)),
+        Point::new(0.0, 0.0, -1.0),
+        1e-12,
+    );
+    approx_vec(
+        mul_mat(r, Point::new(0.0, 1.0, 0.0)),
+        Point::new(0.0, 1.0, 0.0),
+        1e-12,
+    );
+    approx_vec(
+        mul_mat(r, Point::new(0.0, 0.0, 1.0)),
+        Point::new(1.0, 0.0, 0.0),
+        1e-12,
+    );
 }

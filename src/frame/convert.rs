@@ -1,9 +1,8 @@
 use crate::{
     core::{Error, Result},
     earth::{
-        Ecf, Geo, Utm, Wgs,
-        local_axes::r_enu_from_ecf,
-        to_ecf, to_utm, to_wgs, lat_rad, lon_rad, utm_to_wgs,
+        Ecf, Geo, Utm, Wgs, lat_rad, local_axes::r_enu_from_ecf, lon_rad, to_ecf, to_utm, to_wgs,
+        utm_to_wgs,
     },
     frame::{Enu, Ned, enu_to_ned, ned_to_enu},
     math::{mat3_mul_vec, mat3_transpose},

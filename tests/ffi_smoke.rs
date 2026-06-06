@@ -1,12 +1,12 @@
 use std::ffi::CStr;
 
 use concord::ffi::{
-    ConcordGeo3, ConcordQuat, ConcordTransform, ConcordTransformTreeHandle, ConcordUtm,
-    ConcordVec3, concord_convert_wgs_to_enu, concord_last_error_message,
-    concord_transform_tree_can_transform, concord_transform_tree_frame_count,
-    concord_transform_tree_free, concord_transform_tree_lookup, concord_transform_tree_new,
-    concord_transform_tree_register_frame, concord_transform_tree_set_transform,
-    concord_transform_tree_transform_count, concord_utm_to_wgs, concord_wgs_to_utm,
+    ConcordGeo3, ConcordQuat, ConcordTransform, ConcordTransformTree, ConcordUtm, ConcordVec3,
+    concord_convert_wgs_to_enu, concord_last_error_message, concord_transform_tree_can_transform,
+    concord_transform_tree_frame_count, concord_transform_tree_free, concord_transform_tree_lookup,
+    concord_transform_tree_new, concord_transform_tree_register_frame,
+    concord_transform_tree_set_transform, concord_transform_tree_transform_count,
+    concord_utm_to_wgs, concord_wgs_to_utm,
 };
 
 fn c_string(bytes: &'static [u8]) -> *const std::ffi::c_char {
@@ -58,7 +58,7 @@ fn ffi_exposes_convert_builder_and_transform_tree() {
     let base = c_string(b"base\0");
     let sensor = c_string(b"sensor\0");
 
-    let tree: *mut ConcordTransformTreeHandle = concord_transform_tree_new();
+    let tree: *mut ConcordTransformTree = concord_transform_tree_new();
     assert!(!tree.is_null());
 
     assert!(concord_transform_tree_register_frame(tree, world));

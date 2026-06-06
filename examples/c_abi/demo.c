@@ -26,7 +26,7 @@ int main(void) {
   printf("enu=(%.3f, %.3f, %.3f)\n", enu.east, enu.north, enu.up);
   printf("ned=(%.3f, %.3f, %.3f)\n", ned.north, ned.east, ned.down);
 
-  ConcordTransformTreeHandle* tree = concord_transform_tree_new();
+  ConcordTransformTree* tree = concord_transform_tree_new();
   if (tree == NULL) {
     fprintf(stderr, "transform_tree_new failed: %s\n", concord_last_error_message());
     return 1;

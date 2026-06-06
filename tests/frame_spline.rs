@@ -83,7 +83,11 @@ fn transform_spline_interpolates_translation_and_samples() {
     assert!(is_approx_transform(spline.evaluate(1.0), tf2, 1e-10));
 
     let mid = spline.evaluate_normalized(0.5);
-    approx_vec(mid.apply(Point::new(0.0, 0.0, 0.0)), Point::new(5.0, 0.0, 0.0), 1e-10);
+    approx_vec(
+        mid.apply(Point::new(0.0, 0.0, 0.0)),
+        Point::new(5.0, 0.0, 0.0),
+        1e-10,
+    );
 
     let samples = sample_transform_spline(&spline, 5);
     assert_eq!(samples.len(), 5);
