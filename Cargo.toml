@@ -1,6 +1,6 @@
 [package]
 name = "concord"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Rust coordinate transformation library for robotics"
 license = "MIT"
@@ -27,8 +27,8 @@ python = ["dep:pyo3"]
 python-extension = ["python"]
 
 [dependencies]
-datapod = { git = "https://codeberg.org/robolibs/datapod.git", tag = "0.4.0" }
-graphix = { git = "https://codeberg.org/robolibs/graphix.git", tag = "0.1.1" }
+datapod = { git = "https://codeberg.org/robolibs/datapod.git", tag = "0.4.1" }
+graphix = { git = "https://codeberg.org/robolibs/graphix.git", tag = "0.1.2" }
 kiddo = "4.2"
 nalgebra = "0.33"
 pyo3 = { version = "0.23", optional = true, features = [
