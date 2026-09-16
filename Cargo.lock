@@ -106,8 +106,8 @@ checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
 
 [[package]]
 name = "datapod"
-version = "0.6.1"
-source = "git+https://codeberg.org/robolibs/datapod.git?tag=0.6.1#8c47fda99fa0b7aadd20d9c3481657afdb3954ad"
+version = "0.6.2"
+source = "git+https://codeberg.org/robolibs/datapod.git?tag=0.6.2#f4aded9d7cac9e2762fff7a99eeb96026a2d0841"
 dependencies = [
  "bytemuck",
  "datapod-macros",
@@ -116,7 +116,7 @@ dependencies = [
 [[package]]
 name = "datapod-macros"
 version = "0.0.1"
-source = "git+https://codeberg.org/robolibs/datapod.git?tag=0.6.1#8c47fda99fa0b7aadd20d9c3481657afdb3954ad"
+source = "git+https://codeberg.org/robolibs/datapod.git?tag=0.6.2#f4aded9d7cac9e2762fff7a99eeb96026a2d0841"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -190,7 +190,7 @@ checksum = "e762b9b188634fc508d4ec54b62ea3d352c43fd431d18d05d46f559f217f4725"
 [[package]]
 name = "graphix"
 version = "0.1.2"
-source = "git+https://codeberg.org/robolibs/graphix.git?tag=0.1.4#e0062f11de03d64610737f7e9ab221bc266f4d84"
+source = "git+https://codeberg.org/robolibs/graphix.git?tag=0.1.5#4d66881c3b015eb53eaf0f8b4e9806c645e72196"
 dependencies = [
  "datapod",
  "glam",
