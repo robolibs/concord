@@ -27,8 +27,8 @@ python = ["dep:pyo3"]
 python-extension = ["python"]
 
 [dependencies]
-datapod = { git = "https://codeberg.org/robolibs/datapod.git", tag = "0.6.0" }
-graphix = { git = "https://codeberg.org/robolibs/graphix.git", tag = "0.1.3" }
+datapod = { git = "https://codeberg.org/robolibs/datapod.git", tag = "0.6.1" }
+graphix = { git = "https://codeberg.org/robolibs/graphix.git", tag = "0.1.4" }
 kiddo = "4.2"
 nalgebra = "0.33"
 pyo3 = { version = "0.23", optional = true, features = [
