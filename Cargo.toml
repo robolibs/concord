@@ -1,6 +1,6 @@
 [package]
 name = "concord"
-version = "0.1.2"
+version = "0.1.6"
 edition = "2024"
 description = "Rust coordinate transformation library for robotics"
 license = "MIT"
@@ -27,8 +27,8 @@ python = ["dep:pyo3"]
 python-extension = ["python"]
 
 [dependencies]
-datapod = { git = "https://codeberg.org/robolibs/datapod.git", tag = "0.4.1" }
-graphix = { git = "https://codeberg.org/robolibs/graphix.git", tag = "0.1.2" }
+datapod = { git = "https://github.com/robolibs/datapod", tag = "0.6.2" }
+graphix = { git = "https://github.com/robolibs/graphix", tag = "v0.1.6" }
 kiddo = "4.2"
 nalgebra = "0.33"
 pyo3 = { version = "0.23", optional = true, features = [
@@ -38,3 +38,19 @@ pyo3 = { version = "0.23", optional = true, features = [
 rayon = "1.10"
 thiserror = "2.0"
 tokio = { version = "1.48", features = ["fs", "macros", "rt-multi-thread"] }
+
+[[example]]
+name = "builder_chain"
+path = "examples/rust/builder_chain.rs"
+
+[[example]]
+name = "timed_transform_lookup"
+path = "examples/rust/timed_transform_lookup.rs"
+
+[[example]]
+name = "transform_tree_lookup"
+path = "examples/rust/transform_tree_lookup.rs"
+
+[[example]]
+name = "wgs_to_enu"
+path = "examples/rust/wgs_to_enu.rs"
